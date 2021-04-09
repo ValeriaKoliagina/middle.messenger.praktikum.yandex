@@ -63,4 +63,4 @@ export default [
     lastMessageDate: '15 Мая 2019',
     newMessageCount: 1,
   },
-]
+];

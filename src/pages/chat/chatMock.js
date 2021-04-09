@@ -31,4 +31,4 @@
       isOpened: false
     }
   ]
-}
+};

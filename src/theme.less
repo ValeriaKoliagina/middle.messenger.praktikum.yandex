@@ -59,6 +59,7 @@
     flex-direction: column;
     margin: 0 auto;
     width: @width;
+    height: @form-height;
 
     &-avatar {
       display: flex;
@@ -79,7 +80,7 @@
   text-align: center;
   padding-top: 20px;
   width: 100%;
-  
+
   & > button {
     margin-top: 170px;
   }
@@ -95,6 +96,7 @@
 }
 
 .interaction() {
+
   &:hover {
     .box-shadow-activity(fade(@primary-color, 50%));
   }
@@ -109,21 +111,22 @@
 }
 
 .scrollbar() {
+
   &::-webkit-scrollbar {
     width: 5px;
   }
-  
+
   &::-webkit-scrollbar-track {
-    background: #f1f1f1; 
+    background: #f1f1f1;
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: #888; 
+    background: #888;
     border-radius: 20px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
-    background: #555; 
+    background: #555;
   }
 }
 

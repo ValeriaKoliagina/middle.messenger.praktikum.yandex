@@ -8,4 +8,4 @@ export default {
   phone: '+9 (999) 999 99 99',
   password: '123456',
   src: '',
-}
+};
