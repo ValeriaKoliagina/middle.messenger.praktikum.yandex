@@ -1,0 +1,10 @@
+
+<div class='avatar'>
+  <div class='avatar-image{{avatarClass}}' onClick='{{clickHandler}}'>
+    {{#img avatarSrc alt='avatar'}}{{/img}}
+  </div>
+
+  {{#if avatarError}}
+    <span class='avatar-error'>{{avatarError}}</span>
+  {{/if}}
+</div>

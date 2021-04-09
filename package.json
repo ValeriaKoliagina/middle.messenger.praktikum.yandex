@@ -1,0 +1,41 @@
+{
+  "name": "messenger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel static/index.html -p 3000 --no-cache",
+    "dev": "parcel static/*.html",
+    "build": "parcel build static/404.html && parcel build static/change_password.html && parcel build static/login.html && parcel build static/oops.html && parcel build static/profile_edit.html && parcel build static/profile.html && parcel build static/signup.html && parcel build static/chats.html && parcel build static/chat.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex/issues"
+  },
+  "homepage": "https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex#readme",
+  "devDependencies": {
+    "express": "^4.17.1",
+    "handlebars": "^4.7.7",
+    "less": "^4.1.1",
+    "netlify": "^6.1.16",
+    "parcel-bundler": "^1.12.5",
+    "parcel-plugin-static-files-copy": "^2.6.0"
+  },
+  "staticFiles": {
+    "staticPath": [
+      {
+        "staticPath": "static/assets",
+        "staticOutDir": "assets"
+      },
+      {
+        "staticPath": "static/index.html",
+        "staticOutDir": "/"
+      }
+    ]
+  }
+}

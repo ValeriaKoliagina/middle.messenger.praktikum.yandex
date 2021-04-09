@@ -1,0 +1,34 @@
+@import '../../general.less';
+
+@margin-bottom-elements: 4px;
+@space-for-error: @font-size-secondary;
+
+.login {
+  align-self: center;
+  border: 2px solid @primary-color;
+  border-radius: @button-radius;
+  .flex-center-view();
+  margin: 20px auto;
+  height: @form-height;
+  width: 500px;
+
+  &-container {
+    .flex-center-view();
+    height: 100%;
+
+    &-info {
+      & > div {
+        margin-bottom: @margin-bottom-elements;
+      }
+    }
+
+    &-buttons-group {
+      .buttons-group();
+      justify-content: space-between;
+
+      & > button {
+        margin-bottom: @margin-bottom-elements + @space-for-error;
+      }
+    }
+  }
+}
