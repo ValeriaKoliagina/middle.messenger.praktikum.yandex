@@ -1,4 +1,6 @@
-export default [
+import { IChatListItemOptions } from "../../utils/interfaces";
+
+const mock: IChatListItemOptions[] = [
   {
     chatName: 'Андрей',
     avatar: null,
@@ -64,3 +66,6 @@ export default [
     newMessageCount: 1,
   },
 ];
+
+
+export default mock;

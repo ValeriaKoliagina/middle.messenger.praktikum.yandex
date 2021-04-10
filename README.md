@@ -8,6 +8,7 @@
 # Вопросы:
 1. Как можно оптимизировать длинное приведение типов в моем конкретном случае на примере: 
 ```((<IModalOptions>(<IChatPageOptions> this.props).modalWindowRenameChat.props).modalInput)?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value })```
+2. Как можно избежать двойной проверки на undefined. Если убрать одну из проверок, то typeScript Начинает ругаться на ```object is possibly undefined``` К примеру, в файле block.ts в методе ```detachListeners()```
 
 # Описание
 Мессенджер "Грустный лемур" - почувствуй свое одиночесво на нерабочем функционале. 

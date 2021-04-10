@@ -1,7 +1,5 @@
 ﻿import Handlebars from 'handlebars';
 
-import chatMock from './chatMock';
-
 import { IAvatarOptions, IButtonOptions, IChatPageOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
 import '../../utils/handlebarsHelpers';
 import { isNotEmpty } from '../../utils/validations';
@@ -13,6 +11,7 @@ import Button from '../../components/button/button';
 import ChatList from '../../components/chatList/chatList';
 import Input from '../../components/input/input';
 import Modal from '../../components/modal/modal';
+import chatMock from './chatMock';
 import chat from './chat.html';
 import './chat.less';
 
@@ -41,6 +40,7 @@ class Chat extends Block {
       inputClass: 'input-long',
       inputPlaceholder: titles.MESSAGE,
       error: 'no',
+      validateFunctions: []
     };
 
     const chatNameButtonOptions: IButtonOptions = {

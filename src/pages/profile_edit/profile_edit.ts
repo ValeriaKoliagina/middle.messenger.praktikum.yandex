@@ -115,7 +115,7 @@ class ProfileEdit extends Block {
 
   private _enter(event: Event): void {
     event.preventDefault();
-    const form = document.forms['personInfo'];
+    const form = document.forms.namedItem('personInfo');
 
     if (form) {
       const data = getFormData(form);
@@ -138,7 +138,7 @@ class ProfileEdit extends Block {
   _onChange(event: Event): void {
     const name = getName(event);
 
-    return (<IProfileEditPageOptions> this.props)[`${name}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+    return (this.props as {[key:string] : Block})[`${name}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
   }
 
   render(): string {

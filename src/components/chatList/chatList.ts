@@ -81,6 +81,7 @@ class ChatList extends Block {
       inputPlaceholder: titles.CHAT_SEARCH_PLACEHOLDER,
       name: inputNames.SEARCH,
       inputClass: 'input-long',
+      validateFunctions: []
     };
 
     // modal inputs
@@ -217,7 +218,7 @@ class ChatList extends Block {
     const modalWindowDeleteUser = new Modal(modalWindowDeleteUserOptions);
     const modalWindowDeleteChat = new Modal(modalWindowDeleteChatOptions);
     const modalWindowCreateChat = new Modal(modalWindowCreateChatOptions);
-    const chatListItems = chatListMock.map(item => new ChatListItem(<IChatListItemOptions>item));
+    const chatListItems = chatListMock.map((item: IChatListItemOptions) => new ChatListItem(<IChatListItemOptions>item));
 
     const options = {
       lemur: true,

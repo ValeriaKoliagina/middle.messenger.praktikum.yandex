@@ -36,7 +36,7 @@ class Input extends Block {
 
     if (this.props.events && rootElement) {
       Object.keys(this.props.events).forEach(key => {
-        rootElement.removeEventListener(key, this.props.events[key]);
+        this.props.events && rootElement.removeEventListener(key, this.props.events[key]);
       });
     }
   }
@@ -46,7 +46,7 @@ class Input extends Block {
 
     if (this.props.events && rootElement) {
       Object.keys(this.props.events).forEach(key => {
-        rootElement.addEventListener(key, this.props.events[key]);
+        this.props.events && rootElement.addEventListener(key, this.props.events[key]);
       });
     }
   }

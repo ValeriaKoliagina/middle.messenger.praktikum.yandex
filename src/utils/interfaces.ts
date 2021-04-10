@@ -5,11 +5,14 @@ import Input from '../components/input/input';
 import ChatList from '../components/chatList/chatList';
 import Modal from '../components/modal/modal';
 import ChatListItem from '../components/chatListItem/chatListItem';
+import Block from '../components/block/block';
 
 interface IOptions {
   events?: Record<string, (event: Event) => void>;
   elementId?: string;
   lemur?: boolean;
+  block?: Block;
+  blockArray?: Block[];
 }
 
 interface IButtonOptions extends IOptions {
@@ -29,7 +32,7 @@ interface IInputOptions extends IOptions {
   name?: string;
   errorMessage?: string;
   error?: string | boolean;
-  validateFunctions?: Array<(value: string) => string>;
+  validateFunctions: Array<(value: string | undefined) => string>;
 }
 
 interface ILoginPageOptions extends IOptions {
@@ -68,12 +71,12 @@ interface IAvatarOptions extends IOptions {
 interface IChatListItemOptions extends IOptions {
   className?: string;
   chatName?: string;
-  avatar: string;
+  avatar?: string | null;
   lastMessage: string;
   lastMessageDate: string;
   newMessageCount?: number | null;
   selected?: boolean;
-  profileAvatar: Avatar;
+  profileAvatar?: Avatar;
 }
 
 interface IProfilePageOptions extends IOptions {
