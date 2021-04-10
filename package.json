@@ -44,5 +44,8 @@
         "staticOutDir": "/"
       }
     ]
+  },
+  "dependencies": {
+    "cowsay": "^1.4.0"
   }
 }
