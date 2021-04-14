@@ -40,7 +40,7 @@ class HTTPTransport {
       const xhr = new XMLHttpRequest();
 
       xhr.timeout = timeout;
-      xhr.open(method, path);
+      xhr.open(method!, path);
 
       xhr.onload = function() {
         if (xhr.status !== 200) {

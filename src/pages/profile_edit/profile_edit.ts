@@ -1,13 +1,14 @@
 import Handlebars from 'handlebars';
 
-import { IAvatarOptions, IButtonOptions, IInputOptions, IProfileEditPageOptions } from '../../utils/interfaces';
 import inputNames from '../../constants/inputNames';
+import redirections from '../../constants/redirections';
+import titles from '../../constants/titles';
+import { IAvatarOptions, IButtonOptions, IInputOptions, IProfileEditPageOptions } from '../../utils/interfaces';
 import { getFormData, getName } from '../../utils/utils';
 import { isEmail, isNotEmpty, isPhone } from '../../utils/validations';
-import titles from '../../constants/titles';
 import Aside from '../../components/aside/aside';
-import Block from '../../components/block/block';
 import Avatar from '../../components/avatar/avatar';
+import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
 import profileInfo from '../profile/profileMock';
@@ -27,7 +28,6 @@ class ProfileEdit extends Block {
     const saveButtonOptions: IButtonOptions = {
       buttonText: titles.SAVE,
       buttonType: 'submit',
-      events: { click: (event: Event) => this._enter(event) }
     };
 
     // inputs
@@ -38,7 +38,10 @@ class ProfileEdit extends Block {
       inputType: inputNames.EMAIL,
       name: inputNames.EMAIL,
       validateFunctions: [isEmail],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const loginInputOptions: IInputOptions = {
@@ -47,7 +50,10 @@ class ProfileEdit extends Block {
       info: profileInfo.login,
       name: inputNames.LOGIN,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const nameInputOptions: IInputOptions = {
@@ -56,7 +62,10 @@ class ProfileEdit extends Block {
       info: profileInfo.name,
       name: inputNames.NAME,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const surnameInputOptions: IInputOptions = {
@@ -65,7 +74,10 @@ class ProfileEdit extends Block {
       info: profileInfo.surname,
       name: inputNames.SURNAME,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const chatNameInputOptions: IInputOptions = {
@@ -74,7 +86,10 @@ class ProfileEdit extends Block {
       info: profileInfo.chatName,
       name: inputNames.CHAT_NAME,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const phoneInputOptions: IInputOptions = {
@@ -83,7 +98,10 @@ class ProfileEdit extends Block {
       info: profileInfo.phone,
       name: inputNames.PHONE,
       validateFunctions: [isPhone],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const aside = new Aside();
@@ -108,6 +126,7 @@ class ProfileEdit extends Block {
       surnameInput,
       chatNameInput,
       phoneInput,
+      submitFormHandler: (event: Event) => this._enter(event),
     };
 
     super(options, rootId);
@@ -130,7 +149,7 @@ class ProfileEdit extends Block {
       ];
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)) {
-        location.href = 'profile.html';
+        location.href = redirections.PROFILE;
       }
     }
   }
@@ -139,6 +158,13 @@ class ProfileEdit extends Block {
     const name = getName(event);
 
     return (this.props as {[key:string] : Block})[`${name}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+  }
+
+  _onKeyDown(event: KeyboardEvent): void {
+    if (event.code === 'Enter') {
+      this._onChange(event);
+      this._enter(event);
+    }
   }
 
   render(): string {

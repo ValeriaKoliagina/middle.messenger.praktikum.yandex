@@ -1,8 +1,9 @@
 import Handlebars from 'handlebars';
 
-import { IButtonOptions, IErrorPageOptions } from '../../utils/interfaces';
+import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
 import '../../utils/handlebarsHelpers';
+import { IButtonOptions, IErrorPageOptions } from '../../utils/interfaces';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import oops from './oops.html';
@@ -28,7 +29,7 @@ class Oops extends Block {
   }
 
   private _redirect(): void {
-    location.href = 'login.html';
+    location.href = redirections.LOGOUT;
   }
 
   render(): string {

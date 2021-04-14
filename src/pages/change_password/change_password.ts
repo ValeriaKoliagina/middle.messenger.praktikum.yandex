@@ -1,13 +1,14 @@
 import Handlebars from 'handlebars';
 
+import inputNames from '../../constants/inputNames';
+import titles from '../../constants/titles';
+import redirections from '../../constants/redirections';
 import { IAvatarOptions, IButtonOptions, IChangePasswordPageOptions, IInputOptions } from '../../utils/interfaces';
 import { getFormData, getName } from '../../utils/utils';
-import inputNames from '../../constants/inputNames';
 import { isPassword, isPasswordSame } from '../../utils/validations';
-import titles from '../../constants/titles';
 import Aside from '../../components/aside/aside';
-import Block from '../../components/block/block';
 import Avatar from '../../components/avatar/avatar';
+import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
 import profileInfo from '../profile/profileMock';
@@ -25,7 +26,6 @@ class ChangePassword extends Block {
     const saveButtonOptions: IButtonOptions = {
       buttonText: titles.SAVE,
       buttonType: 'submit',
-      events: { click: (event: Event) => this._enter(event) }
     };
 
     const oldPasswordInputOptions: IInputOptions = {
@@ -35,7 +35,10 @@ class ChangePassword extends Block {
       inputType: inputNames.PASSWORD,
       name: inputNames.OLD_PASSWORD,
       validateFunctions: [isPassword],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const newPasswordInputOptions: IInputOptions = {
@@ -44,7 +47,10 @@ class ChangePassword extends Block {
       inputType: inputNames.PASSWORD,
       name: inputNames.PASSWORD,
       validateFunctions: [isPassword],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const newPasswordRepeatInputOptions: IInputOptions = {
@@ -53,7 +59,10 @@ class ChangePassword extends Block {
       inputType: inputNames.PASSWORD,
       name: inputNames.PASSWORD_REPEAT,
       validateFunctions: [isPasswordSame],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const aside = new Aside();
@@ -72,6 +81,7 @@ class ChangePassword extends Block {
       oldPasswordInput,
       passwordInput,
       passwordRepeatInput,
+      submitFormHandler: (event: Event) => this._enter(event),
     };
 
     super(options, rootId);
@@ -79,7 +89,7 @@ class ChangePassword extends Block {
 
   private _enter(event: Event): void {
     event.preventDefault();
-    const form = document.forms['changePassword'];
+    const form = document.forms.namedItem('changePassword');
 
     if (form) {
       const data = getFormData(form);
@@ -91,15 +101,22 @@ class ChangePassword extends Block {
       ];
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)) {
-        location.href = 'profile.html';
+        location.href = redirections.PROFILE;
       }
     }
   }
 
   _onChange(event: Event): void {
-    const action = getName(event);
+    const name = getName(event);
 
-    return (<IChangePasswordPageOptions> this.props)[`${action}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+    return (this.props as {[key:string] : Block})[`${name}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+  }
+
+  _onKeyDown(event: KeyboardEvent): void {
+    if (event.code === 'Enter') {
+      this._onChange(event);
+      this._enter(event);
+    }
   }
 
   render(): string {

@@ -1,20 +1,15 @@
 import Handlebars from 'handlebars';
 
-import { IAvatarOptions, IButtonOptions, IProfilePageOptions } from '../../utils/interfaces';
+import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
+import { IAvatarOptions, IButtonOptions, IProfilePageOptions } from '../../utils/interfaces';
 import Aside from '../../components/aside/aside';
 import Avatar from '../../components/avatar/avatar';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
-import profile from './profile.html';
 import profileInfo from './profileMock';
+import profile from './profile.html';
 import './profile.less';
-
-const REDIRECTIONS = {
-  'change-info-button': 'profile_edit.html',
-  'change-password-button': 'change_password.html',
-  'logout-button': 'login.html',
-};
 
 class Profile extends Block {
   constructor(rootId: string) {
@@ -31,7 +26,7 @@ class Profile extends Block {
       buttonText: titles.CHANGE_INFO,
       buttonClass: 'button-link',
       events: { click: (event: Event) => this._redirect(event) },
-      elementId: 'change-info-button',
+      elementId: 'profile-edit-button',
     };
 
     const changePasswordButtonOptions: IButtonOptions = {
@@ -68,7 +63,10 @@ class Profile extends Block {
   }
 
   private _redirect(event: Event): void {
-    location.href = REDIRECTIONS[(<HTMLButtonElement>event.target).id];
+    const buttonId = (<HTMLButtonElement>event.target).id;
+    const buttonHref = buttonId?.toUpperCase().slice(0, buttonId?.length - 7)
+      .replace('-', '_');
+    location.href = redirections[buttonHref];
   }
 
   render(): string {

@@ -1,7 +1,7 @@
 import Handlebars from 'handlebars';
 
-import { generateRandomString } from '../../utils/utils';
 import { IInputOptions } from '../../utils/interfaces';
+import { generateRandomString } from '../../utils/utils';
 import Block from '../block/block';
 import input from './input.html';
 import './input.less';
@@ -12,7 +12,7 @@ class Input extends Block {
     options.inputId = options.inputId || generateRandomString();
     options.inputType = options.inputType || 'text';
     options.validateFunctions = options.validateFunctions || [];
-    options.error = typeof options.error === 'string' ? !options.error?.length : true;
+    options.error = typeof options.error === 'string' ? !options.error.length : true;
 
     super(options, rootId);
   }
@@ -36,7 +36,7 @@ class Input extends Block {
 
     if (this.props.events && rootElement) {
       Object.keys(this.props.events).forEach(key => {
-        this.props.events && rootElement.removeEventListener(key, this.props.events[key]);
+        rootElement.removeEventListener(key, this.props.events![key]);
       });
     }
   }
@@ -46,7 +46,7 @@ class Input extends Block {
 
     if (this.props.events && rootElement) {
       Object.keys(this.props.events).forEach(key => {
-        this.props.events && rootElement.addEventListener(key, this.props.events[key]);
+        rootElement.addEventListener(key, this.props.events![key]);
       });
     }
   }

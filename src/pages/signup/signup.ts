@@ -1,10 +1,11 @@
 import Handlebars from 'handlebars';
 
+import inputNames from '../../constants/inputNames';
+import redirections from '../../constants/redirections';
+import titles from '../../constants/titles';
 import { IButtonOptions, IInputOptions, ISignupPageOptions } from '../../utils/interfaces';
 import { getFormData, getName } from '../../utils/utils';
-import inputNames from '../../constants/inputNames';
 import { isEmail, isNotEmpty, isPassword, isPasswordSame } from '../../utils/validations';
-import titles from '../../constants/titles';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
@@ -18,9 +19,6 @@ class Signup extends Block {
     const signupButtonOptions: IButtonOptions = {
       buttonText: titles.SIGNUP,
       buttonType: 'submit',
-      events: {
-        click: (event: Event) => this._enter(event)
-      }
     };
 
     const rememberAllButtonOptions: IButtonOptions = {
@@ -36,7 +34,10 @@ class Signup extends Block {
       inputType: inputNames.EMAIL,
       name: inputNames.EMAIL,
       validateFunctions: [isEmail],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const loginInputOptions: IInputOptions = {
@@ -44,7 +45,10 @@ class Signup extends Block {
       inputPlaceholder: titles.LOGIN_PLACEHOLDER,
       name: inputNames.LOGIN,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const nameInputOptions: IInputOptions = {
@@ -52,7 +56,10 @@ class Signup extends Block {
       inputPlaceholder: titles.NAME_PLACEHOLDER,
       name: inputNames.NAME,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const surnameInputOptions: IInputOptions = {
@@ -60,7 +67,10 @@ class Signup extends Block {
       inputPlaceholder: titles.SURNAME_PLACEHOLDER,
       name: inputNames.SURNAME,
       validateFunctions: [isNotEmpty],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const passwordInputOptions: IInputOptions = {
@@ -69,7 +79,10 @@ class Signup extends Block {
       inputType: inputNames.PASSWORD,
       name: inputNames.PASSWORD,
       validateFunctions: [isPassword],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const passwordRepeatInputOptions: IInputOptions = {
@@ -78,7 +91,10 @@ class Signup extends Block {
       inputType: inputNames.PASSWORD,
       name: inputNames.PASSWORD_REPEAT,
       validateFunctions: [isPasswordSame],
-      events: { change: (event: Event) => this._onChange(event) }
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
     };
 
     const signupButton = new Button(signupButtonOptions);
@@ -101,6 +117,7 @@ class Signup extends Block {
       surnameInput,
       passwordInput,
       passwordRepeatInput,
+      submitFormHandler: (event: Event) => this._enter(event),
     };
 
     super(options, rootId);
@@ -108,11 +125,11 @@ class Signup extends Block {
 
   private _enter(event: Event): void {
     event.preventDefault();
-    const form = document.forms['signup'];
+    const form = document.forms.namedItem('signup');
 
     if (form) {
       const data = getFormData(form);
-      console.log('data from form', data);
+      console.log('data from form', data, event);
       const formInputs = [
         (<ISignupPageOptions> this.props).loginInput,
         (<ISignupPageOptions> this.props).emailInput,
@@ -124,19 +141,26 @@ class Signup extends Block {
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)
       ) {
-        location.href = 'chats.html';
+        location.href = redirections.CHATS;
       }
     }
   }
 
   private _redirect(): void {
-    location.href = 'login.html';
+    location.href = redirections.LOGOUT;
   }
 
   _onChange(event: Event): void {
     const name = getName(event);
 
-    return (<ISignupPageOptions> this.props)[`${name}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+    return (this.props as {[key:string] : Block})[`${name}Input`]?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+  }
+
+  _onKeyDown(event: KeyboardEvent): void {
+    if (event.code === 'Enter') {
+      this._onChange(event);
+      this._enter(event);
+    }
   }
 
   render(): string {

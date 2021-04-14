@@ -1,12 +1,12 @@
 ﻿import Handlebars from 'handlebars';
 
-import { IAvatarOptions, IButtonOptions, IChatPageOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
-import '../../utils/handlebarsHelpers';
-import { isNotEmpty } from '../../utils/validations';
 import inputNames from '../../constants/inputNames';
 import titles from '../../constants/titles';
-import Block from '../../components/block/block';
+import '../../utils/handlebarsHelpers';
+import { IAvatarOptions, IButtonOptions, IChatPageOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
+import { isNotEmpty } from '../../utils/validations';
 import Avatar from '../../components/avatar/avatar';
+import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import ChatList from '../../components/chatList/chatList';
 import Input from '../../components/input/input';
@@ -40,7 +40,19 @@ class Chat extends Block {
       inputClass: 'input-long',
       inputPlaceholder: titles.MESSAGE,
       error: 'no',
-      validateFunctions: []
+      validateFunctions: [],
+      events: {
+        change: (event: Event): void => {
+          (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+        },
+        keydown: (event: KeyboardEvent): void => {
+          if (event.code === 'Enter') {
+            (<HTMLElement>document.querySelector('#send-message-button'))!.click();
+            (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
+            (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: ''});
+          }
+        }
+      }
     };
 
     const chatNameButtonOptions: IButtonOptions = {
@@ -55,7 +67,13 @@ class Chat extends Block {
     const submitButtonOptions: IButtonOptions = {
       buttonImg: '/assets/submit.svg',
       buttonClass: 'button-round',
-      events: { click: () => console.log('send message')},
+      elementId: 'send-message-button',
+      events: {
+        click: () => {
+          (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: ''});
+          console.log('send message');
+        },
+      }
     };
 
     const modalInputRenameChatOptions: IInputOptions = {

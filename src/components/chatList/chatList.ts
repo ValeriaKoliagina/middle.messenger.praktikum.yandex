@@ -1,11 +1,12 @@
 ﻿import Handlebars from 'handlebars';
 
-import { IButtonOptions, IChatListItemOptions, IChatListOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
 import inputNames from '../../constants/inputNames';
+import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
+import { IButtonOptions, IChatListItemOptions, IChatListOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
 import { isNotEmpty } from '../../utils/validations';
-import Button from '../button/button';
 import Block from '../block/block';
+import Button from '../button/button';
 import ChatListItem from '../chatListItem/chatListItem';
 import Input from '../input/input';
 import Modal from '../modal/modal';
@@ -46,7 +47,7 @@ class ChatList extends Block {
     const profileButtonOptions: IButtonOptions = {
       buttonText: titles.PROFILE,
       buttonClass: 'button-link button-font-primary',
-      events: { click: () => location.href = 'profile.html' }
+      events: { click: () => location.href = redirections.PROFILE }
     };
 
     const addUserButtonOptions: IButtonOptions = {

@@ -13,6 +13,7 @@ interface IOptions {
   lemur?: boolean;
   block?: Block;
   blockArray?: Block[];
+  submitFormHandler?: (event: Event) => void;
 }
 
 interface IButtonOptions extends IOptions {

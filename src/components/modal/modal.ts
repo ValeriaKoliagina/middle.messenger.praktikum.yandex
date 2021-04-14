@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
 
-import { IModalOptions } from '../../utils/interfaces';
+import { IModalOptions, IOptions } from '../../utils/interfaces';
 import Block from '../block/block';
 import modal from './modal.html';
 import './modal.less';
@@ -24,13 +24,13 @@ class Modal extends Block {
 
     if (this.props.events && modalOverlay) {
       Object.keys(this.props.events).forEach(key => {
-        modalOverlay.removeEventListener(key, this.props.events[key]);
+        modalOverlay.removeEventListener(key, this.props.events![key]);
       });
     }
 
-    Object.keys(this.props).forEach(key => {
-      if (this.props[key]?.props?.elementId) {
-        this.props[key].detachListeners();
+    Object.keys(this.props).forEach((key: keyof IOptions) => {
+      if (this.props[key] instanceof Block) {
+        (<Block> this.props[key]).detachListeners();
       }
     });
   }
@@ -40,13 +40,13 @@ class Modal extends Block {
 
     if (this.props.events && modalOverlay) {
       Object.keys(this.props.events).forEach(key => {
-        modalOverlay.addEventListener(key, this.props.events[key]);
+        modalOverlay.addEventListener(key, this.props.events![key]);
       });
     }
 
-    Object.keys(this.props).forEach(key => {
-      if (this.props[key]?.props?.elementId) {
-        this.props[key].attachListeners();
+    Object.keys(this.props).forEach((key: keyof IOptions) => {
+      if (this.props[key] instanceof Block) {
+        (<Block> this.props[key]).attachListeners();
       }
     });
   }

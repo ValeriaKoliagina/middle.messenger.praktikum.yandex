@@ -1,4 +1,4 @@
-import { IChatListItemOptions } from "../../utils/interfaces";
+import { IChatListItemOptions } from '../../utils/interfaces';
 
 const mock: IChatListItemOptions[] = [
   {
@@ -66,6 +66,5 @@ const mock: IChatListItemOptions[] = [
     newMessageCount: 1,
   },
 ];
-
 
 export default mock;

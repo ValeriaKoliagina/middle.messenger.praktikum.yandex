@@ -1,8 +1,9 @@
 import Handlebars from 'handlebars';
 
+import redirections from '../../constants/redirections';
 import { IAvatarOptions, IChatListItemOptions } from '../../utils/interfaces';
-import Block from '../block/block';
 import Avatar from '../avatar/avatar';
+import Block from '../block/block';
 import chatListItem from './chatListItem.html';
 import './chatListItem.less';
 
@@ -11,7 +12,7 @@ class ChatListItem extends Block {
     options.className = options.selected ? ' chat-list-item-selected' : '';
 
     const profileAvatarOptions: IAvatarOptions = {
-      avatarSrc: options.avatar,
+      avatarSrc: options.avatar ?? '',
       isNoUpload: true,
     };
     const profileAvatar = new Avatar(profileAvatarOptions);
@@ -23,7 +24,7 @@ class ChatListItem extends Block {
   }
 
   private _redirect(): void {
-    location.href = 'chat.html';
+    location.href = redirections.CHAT;
   }
 
   render(): string {
@@ -31,7 +32,7 @@ class ChatListItem extends Block {
 
     return template({
       ...this.props,
-      profileAvatar: (<IChatListItemOptions> this.props).profileAvatar.render()
+      profileAvatar: (<IChatListItemOptions> this.props).profileAvatar!.render()
     });
   }
 }

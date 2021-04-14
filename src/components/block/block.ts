@@ -69,7 +69,6 @@ abstract class Block {
 
   componentDidUpdate(oldProps: IOptions, newProps: IOptions): boolean {
     return newProps !== oldProps;
-
   }
 
   setProps(nextProps: IOptions): void {
@@ -83,36 +82,46 @@ abstract class Block {
 
   detachListeners(): void {
     const rootElement = document.querySelector(`#${this.props.elementId}`);
+    const formElement = document.querySelector('form');
+
+    if (formElement && this.props.submitFormHandler) {
+      formElement.removeEventListener('submit', this.props.submitFormHandler);
+    }
 
     if (this.props.events && rootElement) {
       Object.keys(this.props.events).forEach((key: keyof ElementEventMap) => {
-        this.props.events && rootElement.removeEventListener(key, this.props.events[key]);
+        rootElement.removeEventListener(key, this.props.events![key]);
       });
     }
 
     Object.keys(this.props).forEach((key: keyof IOptions) => {
       if (this.props[key] instanceof Block) {
-        (<Block>this.props[key])?.detachListeners();
-      } else if (Array.isArray(this.props[key]) && (<Block[]>this.props[key])?.length && (<Block[]>this.props[key])[0].props?.elementId) {
-        (<Block[]>this.props[key])?.forEach((el: Block) => el.detachListeners());
+        (<Block> this.props[key]).detachListeners();
+      } else if (Array.isArray(this.props[key]) && (<Block[]> this.props[key])[0]?.props?.elementId) {
+        (<Block[]> this.props[key]).forEach((el: Block) => el.detachListeners());
       }
     });
   }
 
   attachListeners(): void {
     const rootElement = document.querySelector(`#${this.props.elementId}`);
+    const formElement = document.querySelector('form');
+
+    if (formElement && this.props.submitFormHandler) {
+      formElement.addEventListener('submit', this.props.submitFormHandler);
+    }
 
     if (this.props.events && rootElement) {
       Object.keys(this.props.events).forEach(key => {
-        this.props.events && rootElement.addEventListener(key, this.props.events[key]);
+        rootElement.addEventListener(key, this.props.events![key]);
       });
     }
 
     Object.keys(this.props).forEach((key: keyof IOptions) => {
       if (this.props[key] instanceof Block) {
-        (<Block>this.props[key])?.attachListeners();
-      } else if (Array.isArray(this.props[key]) && (<Block[]>this.props[key])?.length && (<Block[]>this.props[key])[0].props?.elementId) {
-        (<Block[]>this.props[key])?.forEach((el: Block) => el.attachListeners());
+        (<Block> this.props[key]).attachListeners();
+      } else if (Array.isArray(this.props[key]) && (<Block[]> this.props[key])[0]?.props?.elementId) {
+        (<Block[]> this.props[key])?.forEach((el: Block) => el.attachListeners());
       }
     });
   }
@@ -125,7 +134,7 @@ abstract class Block {
     const block = this.render();
     this.detachListeners();
 
-    const rootElement = document.getElementById(this._rootId ? this._rootId : '');
+    const rootElement = document.getElementById(this._rootId ?? '');
     this._element.innerHTML = block;
 
     if (rootElement) {
@@ -134,7 +143,7 @@ abstract class Block {
     }
 
     if (!this._rootId) {
-      const elementSelf = document.getElementById(this.props.elementId ? this.props.elementId : '');
+      const elementSelf = document.getElementById(this.props.elementId ?? '');
 
       if (elementSelf) {
         elementSelf.outerHTML = (<HTMLElement> this.element).outerHTML;
@@ -158,11 +167,12 @@ abstract class Block {
         _checkPropIsInternal(<string> prop);
         const value = target[prop];
 
-        return (typeof value === 'function') ? (<Function> value).bind(target) : value;
+        return (typeof value === 'function') ? (<() => void> value).bind(target) : value;
       },
 
       set(target, prop: keyof IOptions, value) {
         _checkPropIsInternal(<string> prop);
+
         if (prop === 'elementId') {
           throw new Error(errors.NOT_ALLOWED);
         }
