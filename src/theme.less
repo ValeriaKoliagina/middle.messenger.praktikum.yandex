@@ -1,15 +1,15 @@
-@primary-color: #1F160F;
+@primary-color: #1f160f;
 @secondary-color: lighten(@primary-color, 50%);
 
-@primary-background-color: #EBE6E3;
+@primary-background-color: #ebe6e3;
 @input-background-color: fade(@primary-background-color, 40%);
 @layout-background-color: fade(@primary-background-color, 10%);
 
-@selected-color: #F9E368;
+@selected-color: #f9e368;
 @secondary-background-color: lighten(@selected-color, 20%);
 
-@error-color: #D60C0C;
-@success-color: #067D12;
+@error-color: #d60c0c;
+@success-color: #067d12;
 @white-color: #fff;
 @black-color: #000;
 
@@ -27,6 +27,8 @@
 @form-height: 600px;
 
 @general-padding: 13px;
+
+@aside-width: 100px;
 
 // mixins
 .size-100() {
@@ -50,7 +52,7 @@
   margin-top: auto;
 }
 
-.profile-info(@width: 300px, @height: unset) {
+.profile-info(@width: 400px, @height: unset) {
   display: flex;
   .size-100();
 
@@ -58,7 +60,9 @@
     display: flex;
     flex-direction: column;
     margin: 0 auto;
+    padding-left: @aside-width;
     width: @width;
+    height: @form-height;
 
     &-avatar {
       display: flex;
@@ -79,7 +83,7 @@
   text-align: center;
   padding-top: 20px;
   width: 100%;
-  
+
   & > button {
     margin-top: 170px;
   }
@@ -95,6 +99,7 @@
 }
 
 .interaction() {
+
   &:hover {
     .box-shadow-activity(fade(@primary-color, 50%));
   }
@@ -109,21 +114,22 @@
 }
 
 .scrollbar() {
+
   &::-webkit-scrollbar {
     width: 5px;
   }
-  
+
   &::-webkit-scrollbar-track {
-    background: #f1f1f1; 
+    background: #f1f1f1;
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: #888; 
+    background: #888;
     border-radius: 20px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
-    background: #555; 
+    background: #555;
   }
 }
 

@@ -1,5 +1,7 @@
 @import '../../theme.less';
 
+@input-width: 300px;
+
 .input-container {
   display: flex;
   flex-direction: column;
@@ -13,7 +15,7 @@
     .interaction();
     outline: none;
     padding: 0 8px;
-    width: 300px;
+    width: @input-width;
 
     &-label {
       font-size: @font-size-secondary;
@@ -26,8 +28,10 @@
 
     &-error {
       color: @error-color;
-      font-size: @font-size-secondary;
-      height: @font-size-secondary;
+      display: block;
+      font-size: @font-size-primary;
+      min-height: @font-size-primary;
+      max-width: @input-width;
     }
 
     &-long {

@@ -33,11 +33,12 @@
         text-align: center;
         width: 50px;
         word-wrap: break-word;
-      } 
+      }
     }
   }
 
-  &-disabled, .avatar-no-upload {
+  &-disabled,
+  .avatar-no-upload {
     cursor: default;
     pointer-events: none;
   }
@@ -50,10 +51,11 @@
     .avatar-size(100px);
 
     &:hover:not(.avatar-disabled) {
+
       &:before {
         content: 'Выберите новый аватар';
         width: 100px;
-      } 
+      }
     }
   }
 

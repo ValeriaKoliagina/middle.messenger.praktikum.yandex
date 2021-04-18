@@ -1,4 +1,4 @@
-<div class='input-container'>
+<div id='{{elementId}}' class='input-container'>
   {{#if label}}
     <label for={{inputId}} class='input-label'>{{label}}</label>
   {{/if}}
@@ -6,13 +6,12 @@
   <input 
     class='input{{inputClass}}'
     type='{{inputType}}'
-    onClick='{{clickHandler}}'
     id={{inputId}}
     value='{{info}}'
     placeholder='{{inputPlaceholder}}'
-    onChange='{{changeHandler}}'
     autocomplete
     name='{{name}}'
+    data-action='{{action}}'
   />
 
   {{#if error}}
