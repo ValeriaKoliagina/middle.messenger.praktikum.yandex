@@ -1,14 +1,9 @@
-# Sprint-2
+# Sprint-3
 
-1. Домен из Netlify, где можно потыкать (sprint-2 branch): https://happy-hamilton-deb78f.netlify.app/,
+1. Домен из Netlify, где можно потыкать (sprint-3 branch): https://happy-hamilton-deb78f.netlify.app/,
    домен для деплоя: https://nostalgic-raman-071242.netlify.app
 2. Макет в Figma: https://www.figma.com/file/pFjKdu2Zj6qZp6yd9gIcPR/Messenger
-3. PR: https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex/pull/1
-
-# Вопросы:
-1. Как можно оптимизировать длинное приведение типов в моем конкретном случае на примере: 
-```((<IModalOptions>(<IChatPageOptions> this.props).modalWindowRenameChat.props).modalInput)?.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value })```
-2. Как можно избежать двойной проверки на undefined. Если убрать одну из проверок, то typeScript Начинает ругаться на ```object is possibly undefined``` К примеру, в файле block.ts в методе ```detachListeners()```
+3. PR: https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex/pull/2
 
 # Описание
 Мессенджер "Грустный лемур" - почувствуй свое одиночесво на нерабочем функционале. 
