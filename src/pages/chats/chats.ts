@@ -30,4 +30,4 @@ class Chats extends Block {
   }
 }
 
-new Chats('chats');
+export default Chats;

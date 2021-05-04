@@ -4,12 +4,13 @@ import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
 import '../../utils/handlebarsHelpers';
 import { IButtonOptions, IErrorPageOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import oops from './oops.html';
 import './oops.less';
 
-class Oops extends Block {
+export class Oops extends Block {
   constructor(rootId: string) {
 
     const returnToChatsButtonOptions: IButtonOptions = {
@@ -29,7 +30,7 @@ class Oops extends Block {
   }
 
   private _redirect(): void {
-    location.href = redirections.LOGOUT;
+    (new Router()).go(redirections.LOGOUT);
   }
 
   render(): string {
@@ -43,4 +44,4 @@ class Oops extends Block {
   }
 }
 
-new Oops('oops');
+export default Oops;

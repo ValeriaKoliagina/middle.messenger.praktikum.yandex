@@ -5,7 +5,7 @@ const titles = {
   CHAT: 'Название чата',
   CHAT_PLACEHOLDER: 'Введите название чата',
   CHAT_NAME: 'Имя в чате',
-  CHAT_NAME_PLACEHOLDER: 'Введите имя, которое будут видеть другие пользователи',
+  CHAT_NAME_PLACEHOLDER: 'Введите имя, отображаемое пользователям',
   CHAT_SEARCH_PLACEHOLDER: 'Поиск',
   CREATE: 'Создать',
   CREATE_CHAT: '+ Создать чат',

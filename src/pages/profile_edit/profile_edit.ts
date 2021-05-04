@@ -1,26 +1,31 @@
 import Handlebars from 'handlebars';
 
+import errors from '../../constants/errors';
 import inputNames from '../../constants/inputNames';
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
+import { ActionTypes, GlobalStore } from '../../utils/store';
 import { IAvatarOptions, IButtonOptions, IInputOptions, IProfileEditPageOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import { getFormData, getName } from '../../utils/utils';
 import { isEmail, isNotEmpty, isPhone } from '../../utils/validations';
+import AuthApi from '../../api/authApi';
+import UserApi from '../../api/userApi';
 import Aside from '../../components/aside/aside';
 import Avatar from '../../components/avatar/avatar';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
-import profileInfo from '../profile/profileMock';
 import profileEdit from './profile_edit.html';
 import './profile_edit.less';
 
 class ProfileEdit extends Block {
   constructor(rootId: string) {
+    const profileInfo = (new GlobalStore()).get('profileInfo');
 
     // avatar
     const profileAvatarOptions: IAvatarOptions = {
-      avatarSrc: profileInfo.src,
+      avatarSrc: (<Record<string, string>> profileInfo)?.avatar,
       avatarClass: 'avatar-big avatar-disabled',
     };
 
@@ -34,7 +39,7 @@ class ProfileEdit extends Block {
     const emailInputOptions: IInputOptions = {
       label: titles.EMAIL,
       inputPlaceholder: titles.EMAIL_PLACEHOLDER,
-      info: profileInfo.email,
+      info: (<Record<string, string>> profileInfo)?.email,
       inputType: inputNames.EMAIL,
       name: inputNames.EMAIL,
       validateFunctions: [isEmail],
@@ -47,7 +52,7 @@ class ProfileEdit extends Block {
     const loginInputOptions: IInputOptions = {
       label: titles.LOGIN,
       inputPlaceholder: titles.LOGIN_PLACEHOLDER,
-      info: profileInfo.login,
+      info: (<Record<string, string>> profileInfo)?.login,
       name: inputNames.LOGIN,
       validateFunctions: [isNotEmpty],
       events: {
@@ -59,7 +64,7 @@ class ProfileEdit extends Block {
     const nameInputOptions: IInputOptions = {
       label: titles.NAME,
       inputPlaceholder: titles.NAME_PLACEHOLDER,
-      info: profileInfo.name,
+      info: (<Record<string, string>> profileInfo)?.first_name,
       name: inputNames.NAME,
       validateFunctions: [isNotEmpty],
       events: {
@@ -71,7 +76,7 @@ class ProfileEdit extends Block {
     const surnameInputOptions: IInputOptions = {
       label: titles.SURNAME,
       inputPlaceholder: titles.SURNAME_PLACEHOLDER,
-      info: profileInfo.surname,
+      info: (<Record<string, string>> profileInfo)?.second_name,
       name: inputNames.SURNAME,
       validateFunctions: [isNotEmpty],
       events: {
@@ -83,7 +88,7 @@ class ProfileEdit extends Block {
     const chatNameInputOptions: IInputOptions = {
       label: titles.CHAT_NAME,
       inputPlaceholder: titles.CHAT_NAME_PLACEHOLDER,
-      info: profileInfo.chatName,
+      info: (<Record<string, string>> profileInfo)?.display_name,
       name: inputNames.CHAT_NAME,
       validateFunctions: [isNotEmpty],
       events: {
@@ -95,7 +100,7 @@ class ProfileEdit extends Block {
     const phoneInputOptions: IInputOptions = {
       label: titles.PHONE,
       inputPlaceholder: titles.PHONE_PLACEHOLDER,
-      info: profileInfo.phone,
+      info: (<Record<string, string>> profileInfo)?.phone,
       name: inputNames.PHONE,
       validateFunctions: [isPhone],
       events: {
@@ -132,13 +137,12 @@ class ProfileEdit extends Block {
     super(options, rootId);
   }
 
-  private _enter(event: Event): void {
+  private async _enter(event: Event): Promise<void> {
     event.preventDefault();
     const form = document.forms.namedItem('personInfo');
 
     if (form) {
       const data = getFormData(form);
-      console.log('data from form', data);
       const formInputs = [
         (<IProfileEditPageOptions> this.props).loginInput,
         (<IProfileEditPageOptions> this.props).emailInput,
@@ -149,7 +153,12 @@ class ProfileEdit extends Block {
       ];
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)) {
-        location.href = redirections.PROFILE;
+        try {
+          await new UserApi().changeProfile(data);
+          (new Router()).go(redirections.PROFILE);
+        } catch (err) {
+          console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+        }
       }
     }
   }
@@ -161,10 +170,30 @@ class ProfileEdit extends Block {
   }
 
   _onKeyDown(event: KeyboardEvent): void {
-    if (event.code === 'Enter') {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       this._onChange(event);
       this._enter(event);
     }
+  }
+
+  async componentDidMount() {
+    (new GlobalStore()).subscribe(ActionTypes.CURRENT_USER, this.onProfileInfo.bind(this));
+    try {
+      const profileInfo = await new AuthApi().getUserInfo();
+      (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
+    } catch (err) {
+      console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+    }
+  }
+
+  private onProfileInfo(state: Record<string, Record<string, string>>) {
+    (<IProfileEditPageOptions> this.props).profileAvatar.setProps(<IAvatarOptions>{ avatarSrc: `https://ya-praktikum.tech/api/v2/resources${state.currentUser.avatar}` });
+    (<IProfileEditPageOptions> this.props).emailInput.setProps(<IInputOptions>{ info: state.currentUser.email });
+    (<IProfileEditPageOptions> this.props).loginInput.setProps(<IInputOptions>{ info: state.currentUser.login });
+    (<IProfileEditPageOptions> this.props).nameInput.setProps(<IInputOptions>{ info: state.currentUser.first_name });
+    (<IProfileEditPageOptions> this.props).surnameInput.setProps(<IInputOptions>{ info: state.currentUser.second_name });
+    (<IProfileEditPageOptions> this.props).chatNameInput.setProps(<IInputOptions>{ info: state.currentUser.display_name });
+    (<IProfileEditPageOptions> this.props).phoneInput.setProps(<IInputOptions>{ info: state.currentUser.phone });
   }
 
   render(): string {
@@ -185,4 +214,4 @@ class ProfileEdit extends Block {
   }
 }
 
-new ProfileEdit('profile-edit');
+export default ProfileEdit;

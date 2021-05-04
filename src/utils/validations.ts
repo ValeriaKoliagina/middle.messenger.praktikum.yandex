@@ -14,15 +14,18 @@ const isPassword = (password: string): string => {
 };
 
 const isPasswordSame = (repeatedPassword: string): string => {
-  const password = (<HTMLInputElement>(document.querySelector(`input[name="${inputNames.PASSWORD}"]`))).value;
+  let password = (<HTMLInputElement>(document.querySelector(`input[name="${inputNames.PASSWORD}"]`)))?.value ?? '';
+  if (!password) {
+    password = (<HTMLInputElement>(document.querySelector(`input[name="${inputNames.NEW_PASSWORD}"]`)))?.value ?? '';
+  }
 
   return repeatedPassword === password ? '' : errors.PASSWORD_REPEAT;
 };
 
 const isNotEmpty = (value: string): string => value ? '' : errors.FILL_FIELD;
 
-const isPhone = (phone: string): string => {
-  const pattern = /^(\+{0,})(\d{0,})([(]{1}\d{1,3}[)]{0,}){0,}(\s?\d+|\+\d{2,3}\s{1}\d+|\d+){1}[\s|-]?\d+([\s|-]?\d+){1,2}(\s){0,}$/gm;
+const isPhone = (phone = ''): string => {
+  const pattern = /^((8|\+7)[- ]?)?((\?\d{3})?[- ]?)?[\d- ]{7,10}$/;
 
   return pattern.test(phone.replace(' ', '')) ? '' : errors.PHONE_INVALID;
 };

@@ -1,6 +1,7 @@
 import Handlebars from 'handlebars';
 
 import { IAsideOptions, IButtonOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import Block from '../block/block';
 import Button from '../button/button';
 import aside from './aside.html';
@@ -24,7 +25,7 @@ class Aside extends Block {
   }
 
   private _redirect(): void {
-    window.history.back();
+    (new Router()).back();
   }
 
   render(): string {

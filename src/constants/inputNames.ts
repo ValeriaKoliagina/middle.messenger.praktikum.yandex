@@ -1,14 +1,15 @@
 const inputNames = {
-  CHAT_NAME: 'chatName',
+  CHAT_NAME: 'display_name',
   EMAIL: 'email',
   LOGIN: 'login',
-  NAME: 'name',
+  NAME: 'first_name',
+  NEW_PASSWORD: 'newPassword',
   OLD_PASSWORD: 'oldPassword',
   PASSWORD: 'password',
   PASSWORD_REPEAT: 'passwordRepeat',
   PHONE: 'phone',
   SEARCH: 'search',
-  SURNAME: 'surname',
+  SURNAME: 'second_name',
   USER: 'user',
 };
 

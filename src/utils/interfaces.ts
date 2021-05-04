@@ -7,6 +7,13 @@ import Modal from '../components/modal/modal';
 import ChatListItem from '../components/chatListItem/chatListItem';
 import Block from '../components/block/block';
 
+interface IPage {
+  new (rootId: string): Block;
+}
+
+interface IRouteOptions {
+  rootQuery: string;
+}
 interface IOptions {
   events?: Record<string, (event: Event) => void>;
   elementId?: string;
@@ -50,6 +57,7 @@ interface ISignupPageOptions extends IOptions {
   loginInput: Input;
   nameInput: Input;
   surnameInput: Input;
+  phoneInput: Input;
   passwordInput: Input;
   passwordRepeatInput: Input;
 }
@@ -67,17 +75,20 @@ interface IAvatarOptions extends IOptions {
   isNoUpload?: boolean;
   avatarSrc?: string;
   avatarError?: string;
+  avatarInput?: Input;
+  uploadAvatar?: (event: Event) => void;
 }
 
 interface IChatListItemOptions extends IOptions {
   className?: string;
-  chatName?: string;
+  title?: string;
   avatar?: string | null;
-  lastMessage: string;
-  lastMessageDate: string;
-  newMessageCount?: number | null;
-  selected?: boolean;
+  lastMessage: Record<string, string | Record<string, string>>;
+  time: string;
+  unread_count?: number | null;
+  selectedChatId?: string;
   profileAvatar?: Avatar;
+  id: number;
 }
 
 interface IProfilePageOptions extends IOptions {
@@ -86,6 +97,7 @@ interface IProfilePageOptions extends IOptions {
   changeInfoButton: Button;
   changePasswordButton: Button;
   logoutButton: Button;
+  profileInfo: Record<string, unknown>,
 }
 
 interface IProfileEditPageOptions extends IOptions {
@@ -128,6 +140,7 @@ interface IChatPageOptions extends IOptions {
   chatNameButton: Button,
   modalWindowRenameChat: Modal,
   chatListComponent: ChatList,
+  chatMessages: Record<string, string>[],
 }
 
 interface IChatListOptions extends IOptions {
@@ -143,6 +156,7 @@ interface IChatListOptions extends IOptions {
   modalWindowDeleteChat: Modal,
   modalWindowCreateChat: Modal,
   chatListItems: ChatListItem[],
+  selectedChatId: string,
 }
 
 export {
@@ -162,4 +176,6 @@ export {
   IChatListOptions,
   IChatsPageOptions,
   IChatPageOptions,
+  IPage,
+  IRouteOptions,
 };

@@ -2,38 +2,54 @@
 
 import inputNames from '../../constants/inputNames';
 import titles from '../../constants/titles';
+import urls from '../../constants/urls';
+import { getChats } from '../../services/chatServices';
 import '../../utils/handlebarsHelpers';
-import { IAvatarOptions, IButtonOptions, IChatPageOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
+import { ActionTypes, GlobalStore } from '../../utils/store';
+import { IAvatarOptions, IButtonOptions, IChatListItemOptions, IChatPageOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
 import { isNotEmpty } from '../../utils/validations';
+import redirections from '../../constants/redirections';
+import Router from '../../utils/router';
+import AuthApi from '../../api/authApi';
+import ChatsAPI from '../../api/chatsApi';
 import Avatar from '../../components/avatar/avatar';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import ChatList from '../../components/chatList/chatList';
+import ChatWebSocket from '../../utils/webSocket';
 import Input from '../../components/input/input';
 import Modal from '../../components/modal/modal';
-import chatMock from './chatMock';
 import chat from './chat.html';
 import './chat.less';
 
-const closeMenu = () => {
-  const settings = document.querySelector('.chat-footer-menu');
-  settings?.classList.remove('chat-footer-menu-open');
-};
-
-document.addEventListener('click', closeMenu);
-
-const onAttachClickHandler = (event: Event) => {
-  event.stopPropagation();
-  const attach = document.querySelector('.chat-footer-menu');
-  attach?.classList.toggle('chat-footer-menu-open');
-};
-
 class Chat extends Block {
   constructor(rootId: string) {
+    const chatList: unknown = (new GlobalStore().get('chatList'));
+    const selectedChatId: string = <string>(new GlobalStore().get('selectedChatId'));
+    const selectedChat = (<Record<string, unknown>[]>chatList)?.find((chat: Record<string, unknown>) => chat.id === selectedChatId);
+    const avatarSrc = selectedChat?.avatar;
 
     const profileAvatarOptions: IAvatarOptions = {
-      avatarSrc: '/assets/photoMenuIcon.svg',
+      avatarSrc: <string>avatarSrc,
       avatarClass: 'chat-header-avatar',
+      uploadAvatar: async (event: Event): Promise<void> => {
+        const formData = new FormData();
+
+        formData.append('chatId', selectedChatId);
+        formData.append('avatar', (<HTMLInputElement>event.target)!.files![0]);
+
+        try {
+          const response = (await new ChatsAPI().uploadAvatar(formData));
+          if (response) {
+            const newAvatar = JSON.parse(<string>response).avatar;
+            newAvatar && (<IChatListItemOptions> this.props)!.profileAvatar!.setProps(<IAvatarOptions>{ avatarSrc: `${urls.AVATAR}${newAvatar}` });
+            const parsedChats = await getChats();
+            (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+          }
+        } catch (err) {
+          (<IChatPageOptions> this.props).profileAvatar.setProps(<IAvatarOptions>{ erroravatarError: err });
+        }
+      }
     };
 
     const chatInputOptions: IInputOptions = {
@@ -46,19 +62,19 @@ class Chat extends Block {
           (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
         },
         keydown: (event: KeyboardEvent): void => {
-          if (event.code === 'Enter') {
-            (<HTMLElement>document.querySelector('#send-message-button'))!.click();
+          if (event.code === 'Enter' || event.code === 'NumpadEnter') {
             (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: (<HTMLInputElement>event.target).value });
-            (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: ''});
+            (<HTMLElement>document.querySelector('#send-message-button'))!.click();
           }
         }
       }
     };
 
     const chatNameButtonOptions: IButtonOptions = {
-      buttonText: chatMock.chatName,
+      buttonText: <string>selectedChat?.title,
       buttonClass: 'button-link button-font-primary button-bold button-link-without-decoration chat-header-name',
       events: { click: () => {
+        console.log('ho-ho-ho, swagger does not provide url for renaming title');
         const chatNameModal = document.querySelector('#rename-chat');
         chatNameModal?.classList.add('modal-open');
       }}
@@ -70,8 +86,8 @@ class Chat extends Block {
       elementId: 'send-message-button',
       events: {
         click: () => {
+          this.sendChatMessage((<IInputOptions>(<IChatPageOptions> this.props).chatInput.props).info ?? '');
           (<IChatPageOptions> this.props).chatInput.setProps(<IInputOptions>{ info: ''});
-          console.log('send message');
         },
       }
     };
@@ -126,6 +142,42 @@ class Chat extends Block {
     super(options, rootId);
   }
 
+  async componentDidMount() {
+    const userInfo = await new AuthApi().getUserInfo();
+    (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>userInfo));
+
+    if ((new GlobalStore()).get('selectedChatId') && (new GlobalStore()).get('selectedChatToken')) {
+      this.connectToChat();
+    }
+
+    (new GlobalStore()).subscribe(ActionTypes.CHAT_MESSAGES, this.onChatMessage.bind(this));
+  }
+
+  afterRender(): void {
+    const closeMenu = () => {
+      const settings = document.querySelector('.chat-footer-menu');
+      settings?.classList.remove('chat-footer-menu-open');
+    };
+
+    document.addEventListener('click', closeMenu);
+
+    const onAttachClickHandler = (event: Event) => {
+      event.stopPropagation();
+      const attach = document.querySelector('.chat-footer-menu');
+      attach?.classList.toggle('chat-footer-menu-open');
+    };
+
+    const attachElement = document.querySelector('.chat-footer-attach');
+    attachElement?.addEventListener('click', onAttachClickHandler);
+
+    const settings = document.querySelector('.chat-footer-menu');
+    settings?.addEventListener('click', event => event.stopPropagation());
+
+    if (!(new GlobalStore().get('selectedChatId'))) {
+      (new Router()).go(redirections.CHATS);
+    }
+  }
+
   render(): string {
     const template = Handlebars.compile(chat);
 
@@ -137,21 +189,34 @@ class Chat extends Block {
       chatNameButton: (<IChatPageOptions> this.props).chatNameButton.render(),
       modalWindowRenameChat: (<IChatPageOptions> this.props).modalWindowRenameChat.render(),
       chatListComponent: (<IChatPageOptions> this.props).chatListComponent.render(),
+      chatMessages: (<IChatPageOptions> this.props).chatMessages,
       attachImg: '/assets/paperclip.svg',
       submitImg: '/assets/submit.svg',
       photoImg: '/assets/photoMenuIcon.svg',
       fileImg: '/assets/fileMenuIcon.svg',
       locationImg: '/assets/locationMenuIcon.svg',
       titles,
-      chatMock,
     });
+  }
+
+  private connectToChat() {
+    new ChatWebSocket(
+      (<Record<string, string>>(new GlobalStore()).get('currentUser')).id,
+      <number>(new GlobalStore()).get('selectedChatId'),
+      <string>(new GlobalStore()).get('selectedChatToken'),
+    );
+  }
+
+  private sendChatMessage(message: string) {
+    (new ChatWebSocket()).send({
+      content: message,
+      type: 'message',
+    });
+  }
+
+  private onChatMessage(state: Record<string, unknown>) {
+    this.setProps(<IChatPageOptions>{ chatMessages: state.chatMessages });
   }
 }
 
-new Chat('chat');
-
-const attachElement = document.querySelector('.chat-footer-attach');
-attachElement?.addEventListener('click', onAttachClickHandler);
-
-const settings = document.querySelector('.chat-footer-menu');
-settings?.addEventListener('click', event => event.stopPropagation());
+export default Chat;

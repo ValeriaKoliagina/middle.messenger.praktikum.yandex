@@ -1,11 +1,15 @@
 import Handlebars from 'handlebars';
 
 import { IButtonOptions, IInputOptions, ILoginPageOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import { getFormData, getName } from '../../utils/utils';
 import { isNotEmpty, isPassword } from '../../utils/validations';
+import { ActionTypes, GlobalStore } from '../../utils/store';
+import errors from '../../constants/errors';
 import inputNames from '../../constants/inputNames';
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
+import AuthApi from '../../api/authApi';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
@@ -68,22 +72,39 @@ class Login extends Block {
     super(options, rootId);
   }
 
-  private _enter(event: Event): void {
+  async componentDidMount() {
+    try {
+      const userInfo = await new AuthApi().getUserInfo();
+      if (userInfo) {
+        (new Router()).go(redirections.CHATS);
+      }
+    } catch (err) {
+      return;
+    }
+  }
+
+  private async _enter(event: Event): Promise<void> {
     event.preventDefault();
     const form = document.forms.namedItem('login');
 
     if (form) {
       const data = getFormData(form);
-      console.log('data from form', data);
 
       if ((<ILoginPageOptions> this.props).loginInput.validate() && (<ILoginPageOptions> this.props).passwordInput.validate()) {
-        location.href = redirections.CHATS;
+        try {
+          await new AuthApi().signin(data);
+          const userInfo = await new AuthApi().getUserInfo();
+          (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>userInfo));
+          (new Router()).go(redirections.CHATS);
+        } catch (err) {
+          console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+        }
       }
     }
   }
 
   private _redirect(): void {
-    location.href = redirections.SIGNUP;
+    (new Router()).go(redirections.SIGNUP);
   }
 
   _onChange(event: Event): void {
@@ -93,7 +114,7 @@ class Login extends Block {
   }
 
   _onKeyDown(event: KeyboardEvent): void {
-    if (event.code === 'Enter') {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       this._onChange(event);
       this._enter(event);
     }
@@ -113,4 +134,4 @@ class Login extends Block {
   }
 }
 
-new Login('root');
+export default Login;

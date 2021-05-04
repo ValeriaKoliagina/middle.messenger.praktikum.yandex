@@ -3,15 +3,19 @@
 import inputNames from '../../constants/inputNames';
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
+import { GlobalStore, ActionTypes } from '../../utils/store';
 import { IButtonOptions, IChatListItemOptions, IChatListOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import { isNotEmpty } from '../../utils/validations';
+import { getChats } from '../../services/chatServices';
+import { getUsers } from '../../services/userServices';
+import ChatsApi from '../../api/chatsApi';
 import Block from '../block/block';
 import Button from '../button/button';
 import ChatListItem from '../chatListItem/chatListItem';
 import Input from '../input/input';
 import Modal from '../modal/modal';
 import chatList from './chatList.html';
-import chatListMock from './chatsMock';
 import './chatList.less';
 
 const closeSettings = () => {
@@ -47,7 +51,7 @@ class ChatList extends Block {
     const profileButtonOptions: IButtonOptions = {
       buttonText: titles.PROFILE,
       buttonClass: 'button-link button-font-primary',
-      events: { click: () => location.href = redirections.PROFILE }
+      events: { click: () => (new Router()).go(redirections.PROFILE) }
     };
 
     const addUserButtonOptions: IButtonOptions = {
@@ -82,7 +86,19 @@ class ChatList extends Block {
       inputPlaceholder: titles.CHAT_SEARCH_PLACEHOLDER,
       name: inputNames.SEARCH,
       inputClass: 'input-long',
-      validateFunctions: []
+      validateFunctions: [],
+      events: { keydown: async (event: KeyboardEvent) => {
+        if (event.code === 'Enter' || event.code === 'NumpadEnter') {
+          try {
+            const title = (<HTMLInputElement>event.target).value || '';
+            (<IChatListOptions> this.props).chatSearchInput?.setProps(<IInputOptions>{ info: title });
+            const parsedChats = await getChats(title);
+            (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }}
     };
 
     // modal inputs
@@ -116,32 +132,87 @@ class ChatList extends Block {
     // modal buttons
     const modalButtonAddUserOptions: IButtonOptions = {
       buttonText: titles.ADD_USER,
-      events: { click: () => {
+      events: { click: async () => {
         const addUserInput = document.querySelector('#add-user-input');
-        if (addUserInput && (<Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowAddUser.props).modalInput).validate()) {
-          const addUserModal = document.querySelector('#add-user');
-          addUserModal?.classList.remove('modal-open');
+        if (addUserInput) {
+          try {
+            const title = <Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowAddUser.props).modalInput;
+            if (title?.validate()) {
+              const selectedChatId = (new GlobalStore()).get('selectedChatId');
+              const newUsers = (<IInputOptions>title.props).info?.split(', ');
+              const finalUsersIds = await getUsers(<string>selectedChatId, <string[]>newUsers, true);
+
+              if (finalUsersIds.length) {
+                await new ChatsApi().addUsersToChat({ users: finalUsersIds, chatId: <string>selectedChatId});
+                if (finalUsersIds!.length !== newUsers!.length) {
+                  console.error('some users are already in this chat');
+                }
+              } else {
+                console.error('no new users for adding');
+              }
+            }
+          } catch (err) {
+            console.error(err);
+          } finally {
+            const addUserModal = document.querySelector('#add-user');
+            addUserModal?.classList.remove('modal-open');
+            (<IModalOptions>(<IChatListOptions> this.props).modalWindowAddUser.props).modalInput?.setProps(<IInputOptions>{ info: '' });
+            (<IModalOptions>(<IChatListOptions> this.props).modalWindowAddUser.props).modalInput?.setProps(<IInputOptions>{ errorMessage: '' });
+          }
         }
       }}
     };
 
     const modalButtonDeleteUserOptions: IButtonOptions = {
       buttonText: titles.DELETE_USER,
-      events: { click: () => {
+      events: { click: async () => {
         const deleteUserInput = document.querySelector('#delete-user-input');
-        if (deleteUserInput && (<Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowDeleteUser.props).modalInput).validate()) {
-          const addUserModal = document.querySelector('#delete-user');
-          addUserModal?.classList.remove('modal-open');
+        if (deleteUserInput) {
+          // TODO: add to service
+          try {
+            const title = (<Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowDeleteUser.props).modalInput);
+            if (title.validate()) {
+              const selectedChatId = (new GlobalStore()).get('selectedChatId');
+              const usersToDelete = (<IInputOptions>title.props).info?.split(', ');
+              const finalUsersIds = await getUsers(<string>selectedChatId, <string[]>usersToDelete);
+
+              if (finalUsersIds.length) {
+                await new ChatsApi().removeUsersFromChat({ users: finalUsersIds, chatId: <string>selectedChatId});
+                if (finalUsersIds!.length !== usersToDelete!.length) {
+                  console.error('some users are not from this chat');
+                }
+              } else {
+                console.error('no users for deleting');
+              }
+            }
+          } catch (err) {
+            console.error(err);
+          } finally {
+            const addUserModal = document.querySelector('#delete-user');
+            addUserModal?.classList.remove('modal-open');
+            (<IModalOptions>(<IChatListOptions> this.props).modalWindowDeleteUser.props).modalInput?.setProps(<IInputOptions>{ info: '' });
+            (<IModalOptions>(<IChatListOptions> this.props).modalWindowDeleteUser.props).modalInput?.setProps(<IInputOptions>{ errorMessage: '' });
+          }
         }
-      }}
+      }
+      }
     };
 
     const modalButtonDeleteChatOptions: IButtonOptions = {
       buttonText: titles.YES,
       buttonClass: 'button-link',
-      events: { click: () => {
-        const addUserModal = document.querySelector('#delete-chat');
-        addUserModal?.classList.remove('modal-open');
+      events: { click: async () => {
+        try {
+          const selectedChatId = (new GlobalStore()).get('selectedChatId');
+          await new ChatsApi().deleteChat(<Record<string, string>>{ chatId: selectedChatId });
+          const parsedChats = await getChats();
+          (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          const deleteChatModal = document.querySelector('#delete-chat');
+          deleteChatModal?.classList.remove('modal-open');
+        }
       }}
     };
 
@@ -149,18 +220,29 @@ class ChatList extends Block {
       buttonText: titles.NO,
       buttonClass: 'button-link button-logout',
       events: { click: () => {
-        const addUserModal = document.querySelector('#delete-chat');
-        addUserModal?.classList.remove('modal-open');
+        const deleteChatModal = document.querySelector('#delete-chat');
+        deleteChatModal?.classList.remove('modal-open');
       }}
     };
 
     const modalButtonCreateChatOptions: IButtonOptions = {
       buttonText: titles.CREATE,
-      events: { click: () => {
+      events: { click: async () => {
         const createChatInput = document.querySelector('#create-chat-input');
-        if (createChatInput && (<Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowCreateChat.props).modalInput).validate()) {
-          const createChatModal = document.querySelector('#create-chat');
-          createChatModal?.classList.remove('modal-open');
+        if (createChatInput) {
+          try {
+            const title = <Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowCreateChat.props).modalInput;
+            if (title?.validate()) {
+              await new ChatsApi().createChat({ 'title': (<IInputOptions>title.props).info ?? ''});
+              const parsedChats = await getChats();
+              (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+            }
+          } catch (err) {
+            console.error(err);
+          } finally {
+            const createChatModal = document.querySelector('#create-chat');
+            createChatModal?.classList.remove('modal-open');
+          }
         }
       }}
     };
@@ -219,7 +301,7 @@ class ChatList extends Block {
     const modalWindowDeleteUser = new Modal(modalWindowDeleteUserOptions);
     const modalWindowDeleteChat = new Modal(modalWindowDeleteChatOptions);
     const modalWindowCreateChat = new Modal(modalWindowCreateChatOptions);
-    const chatListItems = chatListMock.map((item: IChatListItemOptions) => new ChatListItem(<IChatListItemOptions>item));
+    const chatListItems = (<IChatListItemOptions[]>(<unknown>(new GlobalStore()).get('chatList')))?.map((item: IChatListItemOptions) => new ChatListItem(<IChatListItemOptions>item));
 
     const options = {
       lemur: true,
@@ -240,6 +322,22 @@ class ChatList extends Block {
     super(options, rootId);
   }
 
+  async componentDidMount() {
+    (new GlobalStore()).subscribe(ActionTypes.CHAT_LIST, this.chatListCallback.bind(this));
+
+    try {
+      const parsedChats = await getChats();
+      (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  chatListCallback(state: Record<string, unknown>) {
+    const newChatList = (<IChatListItemOptions[]>state.chatList).map((item: IChatListItemOptions) => new ChatListItem(<IChatListItemOptions>item));
+    this.setProps(<IChatListOptions>{ chatListItems: newChatList });
+  }
+
   render(): string {
     const template = Handlebars.compile(chatList);
 
@@ -256,8 +354,8 @@ class ChatList extends Block {
       modalWindowDeleteUser: (<IChatListOptions> this.props).modalWindowDeleteUser.render(),
       modalWindowDeleteChat: (<IChatListOptions> this.props).modalWindowDeleteChat.render(),
       modalWindowCreateChat: (<IChatListOptions> this.props).modalWindowCreateChat.render(),
-      chatListItems: (<IChatListOptions> this.props).chatListItems.map((item: ChatListItem) => item.render()),
-      chatListMock,
+      chatListItems: (<IChatListOptions> this.props).chatListItems?.map((item: ChatListItem) => item.render()),
+      selectedChatId: (new GlobalStore()).get('selectedChatId'),
     });
   }
 }

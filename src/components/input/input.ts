@@ -6,7 +6,7 @@ import Block from '../block/block';
 import input from './input.html';
 import './input.less';
 
-class Input extends Block {
+export class Input extends Block {
   constructor(options: IInputOptions, rootId?: string) {
     options.inputClass = options.inputClass ? ` ${options.inputClass}` : '';
     options.inputId = options.inputId || generateRandomString();
@@ -52,7 +52,7 @@ class Input extends Block {
   }
 
   componentDidUpdate(oldProps: IInputOptions, newProps: IInputOptions): boolean {
-    if (oldProps.info !== newProps.info) {
+    if (Object.keys(newProps).includes('info') && oldProps.info !== newProps.info) {
       this.validate();
     }
 
