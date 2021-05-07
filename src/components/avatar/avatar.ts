@@ -41,12 +41,13 @@ class Avatar extends Block {
 
   render(): string {
     const template = Handlebars.compile(avatar);
+    const { avatarSrc, avatarInput } = this.props as IAvatarOptions;
 
     return template({
       ...this.props,
-      avatarSrc: (<IAvatarOptions> this.props).avatarSrc ?? DEFAULT_AVATAR,
-      isEmpty: (<IAvatarOptions> this.props).avatarSrc === DEFAULT_AVATAR || !(<IAvatarOptions> this.props).avatarSrc,
-      avatarInput: (<IAvatarOptions> this.props).avatarInput?.render(),
+      avatarSrc: avatarSrc ?? DEFAULT_AVATAR,
+      isEmpty: avatarSrc === DEFAULT_AVATAR || !avatarSrc,
+      avatarInput: avatarInput?.render(),
     });
   }
 }

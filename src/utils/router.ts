@@ -41,39 +41,28 @@ class Route {
   }
 
   render(): void {
-    this._block = new this._blockClass(this._props.rootQuery);
-    this._block.show();
+    this._block = this._blockClass && new this._blockClass(this._props.rootQuery);
+    this._block?.show();
   }
 }
 
 export class Router {
-  routes: Route[];
-  history: History;
-  _currentRoute: Route | null;
-  _rootQuery: string;
+  static routes: Route[] = [];
+  static history: History;
+  static _currentRoute: Route | null;
+  static _rootQuery = 'app';
   static __instance: Router;
 
-  constructor(rootQuery = 'app') {
-    if (Router.__instance) {
-      return Router.__instance;
-    }
-
-    this.routes = [];
-    this.history = window.history;
-    this._currentRoute = null;
-    this._rootQuery = rootQuery;
-
-    Router.__instance = this;
-  }
-
-  use(pathname: string, block: IPage) {
+  static use(pathname: string, block: IPage) {
     const route = new Route(pathname, block, { rootQuery: this._rootQuery });
     this.routes.push(route);
 
     return this;
   }
 
-  start() {
+  static start() {
+    Router.history = window.history;
+
     window.onpopstate = (event: PopStateEvent) => {
       this._onRoute((<Window>event?.currentTarget)?.location?.pathname);
     };
@@ -81,7 +70,7 @@ export class Router {
     this._onRoute(window.location.pathname);
   }
 
-  async _onRoute(pathname: string) {
+  static async _onRoute(pathname: string) {
     if (!PUBLIC_ROUTES.includes(pathname)) {
       try {
         await new AuthApi().getUserInfo();
@@ -95,7 +84,7 @@ export class Router {
       return this.go('/not_found');
     }
 
-    (new GlobalStore()).unsubscribeAll();
+    GlobalStore.unsubscribeAll();
 
     if (this._currentRoute) {
       this._currentRoute.leave();
@@ -105,20 +94,20 @@ export class Router {
     route.render();
   }
 
-  go(pathname: string) {
-    this.history.pushState({}, '', pathname);
+  static go(pathname: string) {
+    window.history.pushState({}, '', pathname);
     this._onRoute(pathname);
   }
 
-  back() {
+  static back() {
     window.history.back();
   }
 
-  forward() {
+  static forward() {
     window.history.forward();
   }
 
-  getRoute(pathname: string) {
+  static getRoute(pathname: string) {
     return this.routes.find(route => route.match(pathname));
   }
 }

@@ -159,9 +159,8 @@ class Signup extends Block {
       ) {
         try {
           delete data.passwordRepeatInput;
-          console.log(data);
           await new AuthApi().signup(data);
-          (new Router()).go(redirections.CHATS);
+          Router.go(redirections.CHATS);
         } catch (err) {
           console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
         }
@@ -170,7 +169,7 @@ class Signup extends Block {
   }
 
   private _redirect(): void {
-    (new Router()).go(redirections.LOGOUT);
+    Router.go(redirections.LOGOUT);
   }
 
   _onChange(event: Event): void {
@@ -188,18 +187,30 @@ class Signup extends Block {
 
   render(): string {
     const template = Handlebars.compile(signup);
+    const {
+      elementId,
+      signupButton,
+      rememberAllButton,
+      emailInput,
+      loginInput,
+      nameInput,
+      surnameInput,
+      phoneInput,
+      passwordInput,
+      passwordRepeatInput
+    } = this.props as ISignupPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      signupButton: (<ISignupPageOptions> this.props).signupButton.render(),
-      rememberAllButton: (<ISignupPageOptions> this.props).rememberAllButton.render(),
-      emailInput: (<ISignupPageOptions> this.props).emailInput.render(),
-      loginInput: (<ISignupPageOptions> this.props).loginInput.render(),
-      nameInput: (<ISignupPageOptions> this.props).nameInput.render(),
-      surnameInput: (<ISignupPageOptions> this.props).surnameInput.render(),
-      phoneInput: (<ISignupPageOptions> this.props).phoneInput.render(),
-      passwordInput: (<ISignupPageOptions> this.props).passwordInput.render(),
-      passwordRepeatInput: (<ISignupPageOptions> this.props).passwordRepeatInput.render(),
+      elementId: elementId,
+      signupButton: signupButton.render(),
+      rememberAllButton: rememberAllButton.render(),
+      emailInput: emailInput.render(),
+      loginInput: loginInput.render(),
+      nameInput: nameInput.render(),
+      surnameInput: surnameInput.render(),
+      phoneInput: phoneInput.render(),
+      passwordInput: passwordInput.render(),
+      passwordRepeatInput: passwordRepeatInput.render(),
       titles,
     });
   }

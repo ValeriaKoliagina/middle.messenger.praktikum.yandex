@@ -21,7 +21,7 @@ import './change_password.less';
 
 class ChangePassword extends Block {
   constructor(rootId: string) {
-    const profileInfo = (new GlobalStore()).get('profileInfo');
+    const profileInfo = GlobalStore.get('profileInfo');
 
     const profileAvatarOptions: IAvatarOptions = {
       avatarSrc: (<Record<string, string>> profileInfo)?.avatar,
@@ -107,7 +107,7 @@ class ChangePassword extends Block {
         try {
           delete data.passwordRepeatInput;
           await new UserApi().changePassword(data);
-          (new Router()).go(redirections.PROFILE);
+          Router.go(redirections.PROFILE);
         } catch (err) {
           console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
         }
@@ -129,10 +129,10 @@ class ChangePassword extends Block {
   }
 
   async componentDidMount() {
-    (new GlobalStore()).subscribe(ActionTypes.CURRENT_USER, this.onAvatarInfo.bind(this));
+    GlobalStore.subscribe(ActionTypes.CURRENT_USER, this.onAvatarInfo.bind(this));
     try {
       const profileInfo = await new AuthApi().getUserInfo();
-      (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
+      GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
     } catch (err) {
       console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
     }
@@ -144,15 +144,24 @@ class ChangePassword extends Block {
 
   render(): string {
     const template = Handlebars.compile(changePassword);
+    const {
+      elementId,
+      aside,
+      profileAvatar,
+      saveButton,
+      oldPasswordInput,
+      passwordInput,
+      passwordRepeatInput
+    } = this.props as IChangePasswordPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      aside: (<IChangePasswordPageOptions> this.props).aside.render(),
-      profileAvatar: (<IChangePasswordPageOptions> this.props).profileAvatar.render(),
-      saveButton: (<IChangePasswordPageOptions> this.props).saveButton.render(),
-      oldPasswordInput: (<IChangePasswordPageOptions> this.props).oldPasswordInput.render(),
-      passwordInput: (<IChangePasswordPageOptions> this.props).passwordInput.render(),
-      passwordRepeatInput: (<IChangePasswordPageOptions> this.props).passwordRepeatInput.render(),
+      elementId: elementId,
+      aside: aside.render(),
+      profileAvatar: profileAvatar.render(),
+      saveButton: saveButton.render(),
+      oldPasswordInput: oldPasswordInput.render(),
+      passwordInput: passwordInput.render(),
+      passwordRepeatInput: passwordRepeatInput.render(),
     });
   }
 }

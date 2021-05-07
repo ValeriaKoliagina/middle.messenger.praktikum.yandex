@@ -51,7 +51,7 @@ class ChatList extends Block {
     const profileButtonOptions: IButtonOptions = {
       buttonText: titles.PROFILE,
       buttonClass: 'button-link button-font-primary',
-      events: { click: () => (new Router()).go(redirections.PROFILE) }
+      events: { click: () => Router.go(redirections.PROFILE) }
     };
 
     const addUserButtonOptions: IButtonOptions = {
@@ -93,7 +93,7 @@ class ChatList extends Block {
             const title = (<HTMLInputElement>event.target).value || '';
             (<IChatListOptions> this.props).chatSearchInput?.setProps(<IInputOptions>{ info: title });
             const parsedChats = await getChats(title);
-            (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+            GlobalStore.dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
           } catch (err) {
             console.error(err);
           }
@@ -138,7 +138,7 @@ class ChatList extends Block {
           try {
             const title = <Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowAddUser.props).modalInput;
             if (title?.validate()) {
-              const selectedChatId = (new GlobalStore()).get('selectedChatId');
+              const selectedChatId = GlobalStore.get('selectedChatId');
               const newUsers = (<IInputOptions>title.props).info?.split(', ');
               const finalUsersIds = await getUsers(<string>selectedChatId, <string[]>newUsers, true);
 
@@ -172,7 +172,7 @@ class ChatList extends Block {
           try {
             const title = (<Input>(<IModalOptions>(<IChatListOptions> this.props).modalWindowDeleteUser.props).modalInput);
             if (title.validate()) {
-              const selectedChatId = (new GlobalStore()).get('selectedChatId');
+              const selectedChatId = GlobalStore.get('selectedChatId');
               const usersToDelete = (<IInputOptions>title.props).info?.split(', ');
               const finalUsersIds = await getUsers(<string>selectedChatId, <string[]>usersToDelete);
 
@@ -203,10 +203,10 @@ class ChatList extends Block {
       buttonClass: 'button-link',
       events: { click: async () => {
         try {
-          const selectedChatId = (new GlobalStore()).get('selectedChatId');
+          const selectedChatId = GlobalStore.get('selectedChatId');
           await new ChatsApi().deleteChat(<Record<string, string>>{ chatId: selectedChatId });
           const parsedChats = await getChats();
-          (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+          GlobalStore.dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
         } catch (err) {
           console.error(err);
         } finally {
@@ -235,7 +235,7 @@ class ChatList extends Block {
             if (title?.validate()) {
               await new ChatsApi().createChat({ 'title': (<IInputOptions>title.props).info ?? ''});
               const parsedChats = await getChats();
-              (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+              GlobalStore.dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
             }
           } catch (err) {
             console.error(err);
@@ -301,7 +301,7 @@ class ChatList extends Block {
     const modalWindowDeleteUser = new Modal(modalWindowDeleteUserOptions);
     const modalWindowDeleteChat = new Modal(modalWindowDeleteChatOptions);
     const modalWindowCreateChat = new Modal(modalWindowCreateChatOptions);
-    const chatListItems = (<IChatListItemOptions[]>(<unknown>(new GlobalStore()).get('chatList')))?.map((item: IChatListItemOptions) => new ChatListItem(<IChatListItemOptions>item));
+    const chatListItems = (<IChatListItemOptions[]>(<unknown>GlobalStore.get('chatList')))?.map((item: IChatListItemOptions) => new ChatListItem(<IChatListItemOptions>item));
 
     const options = {
       lemur: true,
@@ -323,11 +323,11 @@ class ChatList extends Block {
   }
 
   async componentDidMount() {
-    (new GlobalStore()).subscribe(ActionTypes.CHAT_LIST, this.chatListCallback.bind(this));
+    GlobalStore.subscribe(ActionTypes.CHAT_LIST, this.chatListCallback.bind(this));
 
     try {
       const parsedChats = await getChats();
-      (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+      GlobalStore.dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
     } catch (err) {
       console.error(err);
     }
@@ -340,22 +340,37 @@ class ChatList extends Block {
 
   render(): string {
     const template = Handlebars.compile(chatList);
+    const {
+      elementId,
+      createChatButton,
+      profileButton,
+      addUserButton,
+      deleteUserButton,
+      deleteChatButton,
+      chatSearchInput,
+      settingsButton,
+      modalWindowAddUser,
+      modalWindowDeleteUser,
+      modalWindowDeleteChat,
+      modalWindowCreateChat,
+      chatListItems
+    } = this.props as IChatListOptions;
 
     return template({
-      elementId: this.props.elementId,
-      createChatButton: (<IChatListOptions> this.props).createChatButton.render(),
-      profileButton: (<IChatListOptions> this.props).profileButton.render(),
-      addUserButton: (<IChatListOptions> this.props).addUserButton.render(),
-      deleteUserButton: (<IChatListOptions> this.props).deleteUserButton.render(),
-      deleteChatButton: (<IChatListOptions> this.props).deleteChatButton.render(),
-      chatSearchInput: (<IChatListOptions> this.props).chatSearchInput.render(),
-      settingsButton: (<IChatListOptions> this.props).settingsButton.render(),
-      modalWindowAddUser: (<IChatListOptions> this.props).modalWindowAddUser.render(),
-      modalWindowDeleteUser: (<IChatListOptions> this.props).modalWindowDeleteUser.render(),
-      modalWindowDeleteChat: (<IChatListOptions> this.props).modalWindowDeleteChat.render(),
-      modalWindowCreateChat: (<IChatListOptions> this.props).modalWindowCreateChat.render(),
-      chatListItems: (<IChatListOptions> this.props).chatListItems?.map((item: ChatListItem) => item.render()),
-      selectedChatId: (new GlobalStore()).get('selectedChatId'),
+      elementId: elementId,
+      createChatButton: createChatButton.render(),
+      profileButton: profileButton.render(),
+      addUserButton: addUserButton.render(),
+      deleteUserButton: deleteUserButton.render(),
+      deleteChatButton: deleteChatButton.render(),
+      chatSearchInput: chatSearchInput.render(),
+      settingsButton: settingsButton.render(),
+      modalWindowAddUser: modalWindowAddUser.render(),
+      modalWindowDeleteUser: modalWindowDeleteUser.render(),
+      modalWindowDeleteChat: modalWindowDeleteChat.render(),
+      modalWindowCreateChat: modalWindowCreateChat.render(),
+      chatListItems: chatListItems?.map((item: ChatListItem) => item.render()),
+      selectedChatId: GlobalStore.get('selectedChatId'),
     });
   }
 }

@@ -18,7 +18,7 @@ import './profile.less';
 
 class Profile extends Block {
   constructor(rootId: string) {
-    const profileInfo = (new GlobalStore()).get('profileInfo') ?? {};
+    const profileInfo = GlobalStore.get('profileInfo') ?? {};
 
     // avatar
     const profileAvatarOptions: IAvatarOptions = {
@@ -83,11 +83,11 @@ class Profile extends Block {
   }
 
   async componentDidMount() {
-    (new GlobalStore()).subscribe(ActionTypes.CURRENT_USER, this.onProfileInfo.bind(this));
+    GlobalStore.subscribe(ActionTypes.CURRENT_USER, this.onProfileInfo.bind(this));
     if (!(<IProfilePageOptions> this.props).profileInfo) {
       try {
         const profileInfo = await new AuthApi().getUserInfo();
-        (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
+        GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
       } catch (err) {
         console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
       }
@@ -97,8 +97,8 @@ class Profile extends Block {
   private async _logout(): Promise<void> {
     try {
       await new AuthApi().logout();
-      (new GlobalStore()).dispatchAction(ActionTypes.LOGOUT);
-      (new Router()).go(redirections.LOGOUT);
+      GlobalStore.dispatchAction(ActionTypes.LOGOUT);
+      Router.go(redirections.LOGOUT);
     } catch (err) {
       console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
     }
@@ -108,7 +108,7 @@ class Profile extends Block {
     const buttonId = (<HTMLButtonElement>event.target).id;
     const buttonHref = buttonId?.toUpperCase().slice(0, buttonId?.length - 7)
       .replace('-', '_');
-    (new Router()).go(redirections[buttonHref]);
+    Router.go(redirections[buttonHref]);
   }
 
   private onProfileInfo(state: Record<string, Record<string, string>>) {
@@ -118,15 +118,23 @@ class Profile extends Block {
 
   render(): string {
     const template = Handlebars.compile(profile);
+    const {
+      elementId,
+      aside,
+      profileAvatar,
+      changeInfoButton,
+      changePasswordButton,
+      logoutButton,
+    } = this.props as IProfilePageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      aside: (<IProfilePageOptions> this.props).aside.render(),
-      profileAvatar: (<IProfilePageOptions> this.props).profileAvatar.render(),
-      changeInfoButton: (<IProfilePageOptions> this.props).changeInfoButton.render(),
-      changePasswordButton: (<IProfilePageOptions> this.props).changePasswordButton.render(),
-      logoutButton: (<IProfilePageOptions> this.props).logoutButton.render(),
-      profileInfo: (new GlobalStore()).get('currentUser'),
+      elementId: elementId,
+      aside: aside.render(),
+      profileAvatar: profileAvatar.render(),
+      changeInfoButton: changeInfoButton.render(),
+      changePasswordButton: changePasswordButton.render(),
+      logoutButton: logoutButton.render(),
+      profileInfo: GlobalStore.get('currentUser'),
       titles,
     });
   }

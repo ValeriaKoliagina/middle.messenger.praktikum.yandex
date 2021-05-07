@@ -1,9 +1,8 @@
 import HTTP from '../utils/request';
-import { BaseAPI } from './baseApi';
 
 const chatsAPIInstance = new HTTP('https://ya-praktikum.tech/api/v2/chats');
 
-class ChatAPI extends BaseAPI {
+class ChatAPI {
   private chats: XMLHttpRequest | string | null = null;
   private chatUsers: XMLHttpRequest | string | null = null;
   private currentChatToken: XMLHttpRequest | string | null =  null;

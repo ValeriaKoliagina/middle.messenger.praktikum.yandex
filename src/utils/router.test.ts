@@ -7,15 +7,12 @@ import { Oops } from '../pages/oops/oops';
 import { Router } from './router';
 
 describe('Router', () => {
-  let testRouter: Router;
-
   before(function() {
-    this.jsdom = jsdom('<html><head></head><body></body></html>', { url: 'http://localhost' });
+    this.jsdom = jsdom('<html><head></head><body><div id="app"></div></body></html>', { url: 'http://localhost' });
   });
 
   beforeEach(function() {
-    testRouter = new Router();
-    testRouter
+    Router
       .use('/not_found', NotFound)
       .use('/oops', Oops)
       .start();
@@ -25,41 +22,34 @@ describe('Router', () => {
   });
 
   it('state of Router should be increased', () => {
-    const startLength = testRouter.history.length;
+    const startLength = Router.history.length;
 
-    window.history.pushState({}, 'not found', 'http://localhost/not_found');
-    window.history.pushState({}, 'oops', 'http://localhost/oops');
+    window.history.pushState({}, 'test', 'http://localhost/test');
+    window.history.pushState({}, 'test2', 'http://localhost/test2');
 
-    expect(testRouter.history.length).to.eq(startLength + 2);
+    expect(Router.history.length).to.eq(startLength + 2);
   });
 
   it('function "back" should return previos pathname ', done => {
     const expectedResult = 'http://localhost/not_found';
-    testRouter.back();
-
-    setTimeout(() => {
+    Router.back();
+    window.onpopstate = () => {
       expect(window.location.href).be.equal(expectedResult);
       done();
-    }, 10);
+    };
   });
 
-  it('function "go" should return choosen pathname ', done => {
-    const expectedResult = 'http://localhost/not_found';
-    testRouter.go(expectedResult);
+  it('function "go" should return choosen pathname ', () => {
+    const expectedResult = '/test';
+    Router.go(expectedResult);
 
-    setTimeout(() => {
-      expect(window.location.href).be.equal(expectedResult);
-      done();
-    }, 10);
+    expect(window.location.href).be.equal(`http://localhost${expectedResult}`);
   });
 
-  it('function "getRoute" should return choosen route ', done => {
+  it('function "getRoute" should return choosen route ', () => {
     const expectedResult = '/not_found';
-    const result = testRouter.getRoute(expectedResult)?._pathname;
+    const result = Router.getRoute(expectedResult)?._pathname;
 
-    setTimeout(() => {
-      expect(result).be.equal(expectedResult);
-      done();
-    }, 10);
+    expect(result).be.equal(expectedResult);
   });
 });

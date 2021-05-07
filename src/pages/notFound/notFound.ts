@@ -29,15 +29,19 @@ export class NotFound extends Block {
   }
 
   private _redirect(): void {
-    (new Router()).go(redirections.LOGOUT);
+    Router.go(redirections.LOGOUT);
   }
 
   render(): string {
     const template = Handlebars.compile(notFound);
+    const {
+      elementId,
+      returnToChatsButton
+    } = this.props as IErrorPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      returnToChatsButton: (<IErrorPageOptions> this.props).returnToChatsButton.render(),
+      elementId: elementId,
+      returnToChatsButton: returnToChatsButton.render(),
       titles,
     });
   }

@@ -1,9 +1,8 @@
 import HTTP from '../utils/request';
-import { BaseAPI } from './baseApi';
 
 const userAPIInstance = new HTTP('https://ya-praktikum.tech/api/v2/user');
 
-class UsersAPI extends BaseAPI {
+class UsersAPI {
   private userByLogin: XMLHttpRequest | string | null = null;
 
   changeProfile(payload: Record<string, FormDataEntryValue>) {

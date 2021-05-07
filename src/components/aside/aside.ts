@@ -25,15 +25,16 @@ class Aside extends Block {
   }
 
   private _redirect(): void {
-    (new Router()).back();
+    Router.back();
   }
 
   render(): string {
     const template = Handlebars.compile(aside);
+    const { backButton } = this.props as IAsideOptions;
 
     return template({
       elementId: this.props.elementId,
-      backButton: (<IAsideOptions> this.props).backButton.render(),
+      backButton: backButton.render(),
     });
   }
 }

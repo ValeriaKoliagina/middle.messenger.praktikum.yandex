@@ -7,7 +7,6 @@ class ChatWebSocket {
   constructor(userId?: string, selectedChatId?: number, selectedChatToken?: string) {
     if (userId && selectedChatId && selectedChatToken) {
       this.socket?.close();
-      console.log(`wss://ya-praktikum.tech/ws/chats/${userId}/${selectedChatId}/${selectedChatToken}`);
       this.socket = new WebSocket(`wss://ya-praktikum.tech/ws/chats/${userId}/${selectedChatId}/${selectedChatToken}`);
       this.socket.addEventListener('open', this.onOpen.bind(this));
       this.socket.addEventListener('message', this.onMessage.bind(this));
@@ -24,7 +23,7 @@ class ChatWebSocket {
 
   onOpen() {
     console.log('Соединение установлено');
-    (new GlobalStore()).dispatchAction(ActionTypes.CHAT_MESSAGES, []);
+    GlobalStore.dispatchAction(ActionTypes.CHAT_MESSAGES, []);
     this.send({
       content: '0',
       type: 'get old'
@@ -33,10 +32,10 @@ class ChatWebSocket {
 
   onMessage(event: Record<string, string>) {
     console.log('Получены данные', event);
-    const chatMessages: unknown = (new GlobalStore()).get('chatMessages');
+    const chatMessages: unknown = GlobalStore.get('chatMessages');
     const data = JSON.parse(event.data);
 
-    (new GlobalStore()).dispatchAction(ActionTypes.CHAT_MESSAGES,
+    GlobalStore.dispatchAction(ActionTypes.CHAT_MESSAGES,
       Array.isArray(data) ? [ ...(<Record<string, unknown>[]>chatMessages), ...data ] : [ ...(<Record<string, unknown>[]>chatMessages), data ]);
   }
 

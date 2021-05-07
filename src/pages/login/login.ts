@@ -76,7 +76,7 @@ class Login extends Block {
     try {
       const userInfo = await new AuthApi().getUserInfo();
       if (userInfo) {
-        (new Router()).go(redirections.CHATS);
+        Router.go(redirections.CHATS);
       }
     } catch (err) {
       return;
@@ -94,8 +94,8 @@ class Login extends Block {
         try {
           await new AuthApi().signin(data);
           const userInfo = await new AuthApi().getUserInfo();
-          (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>userInfo));
-          (new Router()).go(redirections.CHATS);
+          GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>userInfo));
+          Router.go(redirections.CHATS);
         } catch (err) {
           console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
         }
@@ -104,7 +104,7 @@ class Login extends Block {
   }
 
   private _redirect(): void {
-    (new Router()).go(redirections.SIGNUP);
+    Router.go(redirections.SIGNUP);
   }
 
   _onChange(event: Event): void {
@@ -122,13 +122,20 @@ class Login extends Block {
 
   render(): string {
     const template = Handlebars.compile(login);
+    const {
+      elementId,
+      loginButton,
+      registerButton,
+      loginInput,
+      passwordInput
+    } = this.props as ILoginPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      loginButton: (<ILoginPageOptions> this.props).loginButton.render(),
-      registerButton: (<ILoginPageOptions> this.props).registerButton.render(),
-      loginInput: (<ILoginPageOptions> this.props).loginInput.render(),
-      passwordInput: (<ILoginPageOptions> this.props).passwordInput.render(),
+      elementId: elementId,
+      loginButton: loginButton.render(),
+      registerButton: registerButton.render(),
+      loginInput: loginInput.render(),
+      passwordInput: passwordInput.render(),
       titles,
     });
   }

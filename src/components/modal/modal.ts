@@ -53,12 +53,13 @@ class Modal extends Block {
 
   render(): string {
     const template = Handlebars.compile(modal);
+    const { modalInput, modalButton, modalCancelButton } = this.props as IModalOptions;
 
     return template({
       ...this.props,
-      modalInput: (<IModalOptions> this.props).modalInput?.render(),
-      modalButton: (<IModalOptions> this.props).modalButton.render(),
-      modalCancelButton: (<IModalOptions> this.props).modalCancelButton?.render(),
+      modalInput: modalInput?.render(),
+      modalButton: modalButton.render(),
+      modalCancelButton: modalCancelButton?.render(),
     });
   }
 }

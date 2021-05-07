@@ -24,8 +24,8 @@ import './chat.less';
 
 class Chat extends Block {
   constructor(rootId: string) {
-    const chatList: unknown = (new GlobalStore().get('chatList'));
-    const selectedChatId: string = <string>(new GlobalStore().get('selectedChatId'));
+    const chatList: unknown = GlobalStore.get('chatList');
+    const selectedChatId: string = <string>GlobalStore.get('selectedChatId');
     const selectedChat = (<Record<string, unknown>[]>chatList)?.find((chat: Record<string, unknown>) => chat.id === selectedChatId);
     const avatarSrc = selectedChat?.avatar;
 
@@ -44,7 +44,7 @@ class Chat extends Block {
             const newAvatar = JSON.parse(<string>response).avatar;
             newAvatar && (<IChatListItemOptions> this.props)!.profileAvatar!.setProps(<IAvatarOptions>{ avatarSrc: `${urls.AVATAR}${newAvatar}` });
             const parsedChats = await getChats();
-            (new GlobalStore()).dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
+            GlobalStore.dispatchAction(ActionTypes.CHAT_LIST, parsedChats);
           }
         } catch (err) {
           (<IChatPageOptions> this.props).profileAvatar.setProps(<IAvatarOptions>{ erroravatarError: err });
@@ -144,13 +144,13 @@ class Chat extends Block {
 
   async componentDidMount() {
     const userInfo = await new AuthApi().getUserInfo();
-    (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>userInfo));
+    GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>userInfo));
 
-    if ((new GlobalStore()).get('selectedChatId') && (new GlobalStore()).get('selectedChatToken')) {
+    if (GlobalStore.get('selectedChatId') && GlobalStore.get('selectedChatToken')) {
       this.connectToChat();
     }
 
-    (new GlobalStore()).subscribe(ActionTypes.CHAT_MESSAGES, this.onChatMessage.bind(this));
+    GlobalStore.subscribe(ActionTypes.CHAT_MESSAGES, this.onChatMessage.bind(this));
   }
 
   afterRender(): void {
@@ -173,23 +173,33 @@ class Chat extends Block {
     const settings = document.querySelector('.chat-footer-menu');
     settings?.addEventListener('click', event => event.stopPropagation());
 
-    if (!(new GlobalStore().get('selectedChatId'))) {
-      (new Router()).go(redirections.CHATS);
+    if (!GlobalStore.get('selectedChatId')) {
+      Router.go(redirections.CHATS);
     }
   }
 
   render(): string {
     const template = Handlebars.compile(chat);
+    const {
+      elementId,
+      profileAvatar,
+      chatInput,
+      submitButton,
+      chatNameButton,
+      modalWindowRenameChat,
+      chatListComponent,
+      chatMessages
+    } = this.props as IChatPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      profileAvatar: (<IChatPageOptions> this.props).profileAvatar.render(),
-      chatInput: (<IChatPageOptions> this.props).chatInput.render(),
-      submitButton: (<IChatPageOptions> this.props).submitButton.render(),
-      chatNameButton: (<IChatPageOptions> this.props).chatNameButton.render(),
-      modalWindowRenameChat: (<IChatPageOptions> this.props).modalWindowRenameChat.render(),
-      chatListComponent: (<IChatPageOptions> this.props).chatListComponent.render(),
-      chatMessages: (<IChatPageOptions> this.props).chatMessages,
+      elementId: elementId,
+      profileAvatar: profileAvatar.render(),
+      chatInput: chatInput.render(),
+      submitButton: submitButton.render(),
+      chatNameButton: chatNameButton.render(),
+      modalWindowRenameChat: modalWindowRenameChat.render(),
+      chatListComponent: chatListComponent.render(),
+      chatMessages: chatMessages,
       attachImg: '/assets/paperclip.svg',
       submitImg: '/assets/submit.svg',
       photoImg: '/assets/photoMenuIcon.svg',
@@ -201,9 +211,9 @@ class Chat extends Block {
 
   private connectToChat() {
     new ChatWebSocket(
-      (<Record<string, string>>(new GlobalStore()).get('currentUser')).id,
-      <number>(new GlobalStore()).get('selectedChatId'),
-      <string>(new GlobalStore()).get('selectedChatToken'),
+      (<Record<string, string>>GlobalStore.get('currentUser')).id,
+      <number>GlobalStore.get('selectedChatId'),
+      <string>GlobalStore.get('selectedChatToken'),
     );
   }
 

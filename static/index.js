@@ -11,9 +11,7 @@ import ProfileEdit from '../src/pages/profile_edit/profile_edit'
 import Signup from '../src/pages/signup/signup'
 import '../src/general.less'
 
-const router = new Router();
-
-router
+Router
   .use('/not_found', NotFound)
   .use('/change_password', ChangePassword)
   .use('/chats', Chats)

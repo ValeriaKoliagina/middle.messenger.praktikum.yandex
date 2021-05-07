@@ -1,5 +1,6 @@
 import Handlebars from 'handlebars';
 
+import urls from '../../constants/urls';
 import errors from '../../constants/errors';
 import inputNames from '../../constants/inputNames';
 import redirections from '../../constants/redirections';
@@ -21,7 +22,7 @@ import './profile_edit.less';
 
 class ProfileEdit extends Block {
   constructor(rootId: string) {
-    const profileInfo = (new GlobalStore()).get('profileInfo');
+    const profileInfo = GlobalStore.get('profileInfo');
 
     // avatar
     const profileAvatarOptions: IAvatarOptions = {
@@ -155,7 +156,7 @@ class ProfileEdit extends Block {
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)) {
         try {
           await new UserApi().changeProfile(data);
-          (new Router()).go(redirections.PROFILE);
+          Router.go(redirections.PROFILE);
         } catch (err) {
           console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
         }
@@ -177,39 +178,61 @@ class ProfileEdit extends Block {
   }
 
   async componentDidMount() {
-    (new GlobalStore()).subscribe(ActionTypes.CURRENT_USER, this.onProfileInfo.bind(this));
+    GlobalStore.subscribe(ActionTypes.CURRENT_USER, this.onProfileInfo.bind(this));
     try {
       const profileInfo = await new AuthApi().getUserInfo();
-      (new GlobalStore()).dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
+      GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
     } catch (err) {
       console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
     }
   }
 
   private onProfileInfo(state: Record<string, Record<string, string>>) {
-    (<IProfileEditPageOptions> this.props).profileAvatar.setProps(<IAvatarOptions>{ avatarSrc: `https://ya-praktikum.tech/api/v2/resources${state.currentUser.avatar}` });
-    (<IProfileEditPageOptions> this.props).emailInput.setProps(<IInputOptions>{ info: state.currentUser.email });
-    (<IProfileEditPageOptions> this.props).loginInput.setProps(<IInputOptions>{ info: state.currentUser.login });
-    (<IProfileEditPageOptions> this.props).nameInput.setProps(<IInputOptions>{ info: state.currentUser.first_name });
-    (<IProfileEditPageOptions> this.props).surnameInput.setProps(<IInputOptions>{ info: state.currentUser.second_name });
-    (<IProfileEditPageOptions> this.props).chatNameInput.setProps(<IInputOptions>{ info: state.currentUser.display_name });
-    (<IProfileEditPageOptions> this.props).phoneInput.setProps(<IInputOptions>{ info: state.currentUser.phone });
+    const {
+      profileAvatar,
+      emailInput,
+      loginInput,
+      nameInput,
+      surnameInput,
+      chatNameInput,
+      phoneInput
+    } = this.props as IProfileEditPageOptions;
+
+    profileAvatar.setProps(<IAvatarOptions>{ avatarSrc: `${urls.AVATAR}${state.currentUser.avatar}` });
+    emailInput.setProps(<IInputOptions>{ info: state.currentUser.email });
+    loginInput.setProps(<IInputOptions>{ info: state.currentUser.login });
+    nameInput.setProps(<IInputOptions>{ info: state.currentUser.first_name });
+    surnameInput.setProps(<IInputOptions>{ info: state.currentUser.second_name });
+    chatNameInput.setProps(<IInputOptions>{ info: state.currentUser.display_name });
+    phoneInput.setProps(<IInputOptions>{ info: state.currentUser.phone });
   }
 
   render(): string {
     const template = Handlebars.compile(profileEdit);
+    const {
+      elementId,
+      aside,
+      profileAvatar,
+      saveButton,
+      emailInput,
+      loginInput,
+      nameInput,
+      surnameInput,
+      chatNameInput,
+      phoneInput
+    } = this.props as IProfileEditPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      aside: (<IProfileEditPageOptions> this.props).aside.render(),
-      profileAvatar: (<IProfileEditPageOptions> this.props).profileAvatar.render(),
-      saveButton: (<IProfileEditPageOptions> this.props).saveButton.render(),
-      emailInput: (<IProfileEditPageOptions> this.props).emailInput.render(),
-      loginInput: (<IProfileEditPageOptions> this.props).loginInput.render(),
-      nameInput: (<IProfileEditPageOptions> this.props).nameInput.render(),
-      surnameInput: (<IProfileEditPageOptions> this.props).surnameInput.render(),
-      chatNameInput: (<IProfileEditPageOptions> this.props).chatNameInput.render(),
-      phoneInput: (<IProfileEditPageOptions> this.props).phoneInput.render(),
+      elementId: elementId,
+      aside: aside.render(),
+      profileAvatar: profileAvatar.render(),
+      saveButton: saveButton.render(),
+      emailInput: emailInput.render(),
+      loginInput: loginInput.render(),
+      nameInput: nameInput.render(),
+      surnameInput: surnameInput.render(),
+      chatNameInput: chatNameInput.render(),
+      phoneInput: phoneInput.render(),
     });
   }
 }

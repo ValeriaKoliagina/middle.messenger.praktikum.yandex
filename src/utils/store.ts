@@ -1,12 +1,12 @@
-interface IGlobalStore {
-  state: Record<string, unknown>,
-  subscribers: Record<string, unknown>,
-  subscribe: (action: string, callback: () => void) => (() => void),
-  publish: (action: string) => void,
-  dispatchAction: (action: string, payload: Record<string, unknown> | Record<string, unknown>[]) => void,
-  unsubscribeAll: () => void,
-  get: (name: string) => Record<string, unknown> | Record<string, unknown>[] | string | number,
-}
+// interface IGlobalStore {
+//   state: Record<string, unknown>,
+//   subscribers: Record<string, unknown>,
+//   subscribe: (action: string, callback: () => void) => (() => void),
+//   publish: (action: string) => void,
+//   dispatchAction: (action: string, payload: Record<string, unknown> | Record<string, unknown>[]) => void,
+//   unsubscribeAll: () => void,
+//   get: (name: string) => Record<string, unknown> | Record<string, unknown>[] | string | number,
+// }
 
 enum ActionTypes {
   CHAT_LIST = 'chat_list',
@@ -17,21 +17,14 @@ enum ActionTypes {
   CHAT_MESSAGES = 'chat_messages'
 }
 
-class GlobalStore implements IGlobalStore {
+class GlobalStore {
   static __instance: GlobalStore;
-  state: Record<string, unknown> = {}
-  subscribers: Record<string, unknown> = {}
-
-  constructor() {
-    if (GlobalStore.__instance) {
-      return GlobalStore.__instance;
-    }
-
-    this.state.chatMessages = [];
-    GlobalStore.__instance = <GlobalStore> this;
+  static state: Record<string, unknown> = {
+    chatMessages: {}
   }
+  static subscribers: Record<string, unknown> = {}
 
-  subscribe(action: string, callback: () => void) {
+  static subscribe(action: string, callback: () => void) {
     if (!Object.prototype.hasOwnProperty.call(this.subscribers, action)) {
       this.subscribers[action] = [];
     }
@@ -43,22 +36,22 @@ class GlobalStore implements IGlobalStore {
     );
   }
 
-  unsubscribeAll() {
+  static unsubscribeAll() {
     this.subscribers = {};
   }
 
-  dispatchAction(action: string, payload?: Record<string, unknown> | Record<string, unknown>[] | string | number) {
+  static dispatchAction(action: string, payload?: Record<string, unknown> | Record<string, unknown>[] | string | number) {
     this.state = (<(state: Record<string, unknown>, payload?: Record<string, unknown> | Record<string, unknown>[] | string | number)=>Record<string, unknown>>ACTIONS[action])(this.state, payload);
     this.publish(action);
   }
 
-  publish(action: string) {
+  static publish(action: string) {
     if (Object.prototype.hasOwnProperty.call(this.subscribers, action)) {
       (<((cb: Record<string, unknown>) => void)[]> this.subscribers[action]).forEach(cb => cb(this.state));
     }
   }
 
-  get(name: string) {
+  static get(name: string) {
     return <Record<string, unknown> | Record<string, unknown>[] | string | number> this.state[name];
   }
 

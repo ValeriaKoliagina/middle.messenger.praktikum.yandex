@@ -15,7 +15,7 @@ export const getUsers = async (selectedChatId: string, userList: string[] = [], 
       return filteredUserInfo?.id;
     }));
 
-    return finalUsersInfo.filter(_ => _);
+    return finalUsersInfo.filter(info => info);
   } catch (err) {
     throw new Error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
   }

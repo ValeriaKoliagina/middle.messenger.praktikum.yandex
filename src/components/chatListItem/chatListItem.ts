@@ -13,7 +13,7 @@ import './chatListItem.less';
 
 class ChatListItem extends Block {
   constructor(options: IChatListItemOptions, rootId?: string) {
-    options.className = (new GlobalStore()).get('selectedChatId') === options.id ? ' chat-list-item-selected' : '';
+    options.className = GlobalStore.get('selectedChatId') === options.id ? ' chat-list-item-selected' : '';
 
     const profileAvatarOptions: IAvatarOptions = {
       avatarSrc: options.avatar ?? '',
@@ -23,11 +23,11 @@ class ChatListItem extends Block {
 
     options.profileAvatar = profileAvatar;
     options.events = { click: async () => {
-      if ((new GlobalStore()).get('selectedChatId') !== options.id) {
+      if (GlobalStore.get('selectedChatId') !== options.id) {
         try {
           const chatInfoToken = await new ChatsApi().getCurrentChatToken(options.id);
-          (new GlobalStore()).dispatchAction(ActionTypes.SELECTED_CHAT_ID, (<IChatListItemOptions> this.props).id);
-          (new GlobalStore()).dispatchAction(ActionTypes.SELECTED_CHAT_TOKEN, JSON.parse(<string>chatInfoToken).token);
+          GlobalStore.dispatchAction(ActionTypes.SELECTED_CHAT_ID, (<IChatListItemOptions> this.props).id);
+          GlobalStore.dispatchAction(ActionTypes.SELECTED_CHAT_TOKEN, JSON.parse(<string>chatInfoToken).token);
           this._redirect();
         } catch (err) {
           console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
@@ -39,25 +39,26 @@ class ChatListItem extends Block {
   }
 
   private _redirect(): void {
-    (new Router()).go(redirections.CHAT);
+    Router.go(redirections.CHAT);
   }
 
   setClassName() {
-    if ((new GlobalStore()).get('selectedChatId') === (<IChatListItemOptions> this.props).id) {
+    if (GlobalStore.get('selectedChatId') === (<IChatListItemOptions> this.props).id) {
       this.setProps(<IChatListItemOptions>{ className: ' chat-list-item-selected' });
     }
   }
 
   componentDidMount() {
-    (new GlobalStore().subscribe(ActionTypes.SELECTED_CHAT_ID, this.setClassName.bind(this)));
+    GlobalStore.subscribe(ActionTypes.SELECTED_CHAT_ID, this.setClassName.bind(this));
   }
 
   render(): string {
     const template = Handlebars.compile(chatListItem);
+    const { profileAvatar } = this.props as IChatListItemOptions;
 
     return template({
       ...this.props,
-      profileAvatar: (<IChatListItemOptions> this.props).profileAvatar!.render()
+      profileAvatar: profileAvatar!.render()
     });
   }
 }
