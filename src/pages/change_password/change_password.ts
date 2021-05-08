@@ -1,25 +1,30 @@
 import Handlebars from 'handlebars';
 
+import errors from '../../constants/errors';
 import inputNames from '../../constants/inputNames';
 import titles from '../../constants/titles';
 import redirections from '../../constants/redirections';
+import { ActionTypes, GlobalStore } from '../../utils/store';
 import { IAvatarOptions, IButtonOptions, IChangePasswordPageOptions, IInputOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import { getFormData, getName } from '../../utils/utils';
 import { isPassword, isPasswordSame } from '../../utils/validations';
+import AuthApi from '../../api/authApi';
+import UserApi from '../../api/userApi';
 import Aside from '../../components/aside/aside';
 import Avatar from '../../components/avatar/avatar';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
-import profileInfo from '../profile/profileMock';
 import changePassword from './change_password.html';
 import './change_password.less';
 
 class ChangePassword extends Block {
   constructor(rootId: string) {
+    const profileInfo = GlobalStore.get('profileInfo');
 
     const profileAvatarOptions: IAvatarOptions = {
-      avatarSrc: profileInfo.src,
+      avatarSrc: (<Record<string, string>> profileInfo)?.avatar,
       avatarClass: 'avatar-big avatar-disabled',
     };
 
@@ -31,7 +36,6 @@ class ChangePassword extends Block {
     const oldPasswordInputOptions: IInputOptions = {
       label: titles.OLD_PASSWORD,
       inputPlaceholder: titles.OLD_PASSWORD_PLACEHOLDER,
-      info: profileInfo.password,
       inputType: inputNames.PASSWORD,
       name: inputNames.OLD_PASSWORD,
       validateFunctions: [isPassword],
@@ -45,7 +49,7 @@ class ChangePassword extends Block {
       label: titles.NEW_PASSWORD,
       inputPlaceholder: titles.PASSWORD_PLACEHOLDER,
       inputType: inputNames.PASSWORD,
-      name: inputNames.PASSWORD,
+      name: inputNames.NEW_PASSWORD,
       validateFunctions: [isPassword],
       events: {
         change: (event: Event) => this._onChange(event),
@@ -87,13 +91,12 @@ class ChangePassword extends Block {
     super(options, rootId);
   }
 
-  private _enter(event: Event): void {
+  private async _enter(event: Event): Promise<void> {
     event.preventDefault();
     const form = document.forms.namedItem('changePassword');
 
     if (form) {
       const data = getFormData(form);
-      console.log('data from form', data);
       const formInputs = [
         (<IChangePasswordPageOptions> this.props).oldPasswordInput,
         (<IChangePasswordPageOptions> this.props).passwordInput,
@@ -101,7 +104,13 @@ class ChangePassword extends Block {
       ];
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)) {
-        location.href = redirections.PROFILE;
+        try {
+          delete data.passwordRepeatInput;
+          await new UserApi().changePassword(data);
+          Router.go(redirections.PROFILE);
+        } catch (err) {
+          console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+        }
       }
     }
   }
@@ -113,25 +122,48 @@ class ChangePassword extends Block {
   }
 
   _onKeyDown(event: KeyboardEvent): void {
-    if (event.code === 'Enter') {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       this._onChange(event);
       this._enter(event);
     }
   }
 
+  async componentDidMount() {
+    GlobalStore.subscribe(ActionTypes.CURRENT_USER, this.onAvatarInfo.bind(this));
+    try {
+      const profileInfo = await new AuthApi().getUserInfo();
+      GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
+    } catch (err) {
+      console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+    }
+  }
+
+  private onAvatarInfo(state: Record<string, Record<string, string>>) {
+    (<IChangePasswordPageOptions> this.props).profileAvatar.setProps(<IAvatarOptions>{ avatarSrc: `https://ya-praktikum.tech/api/v2/resources${state.currentUser.avatar}` });
+  }
+
   render(): string {
     const template = Handlebars.compile(changePassword);
+    const {
+      elementId,
+      aside,
+      profileAvatar,
+      saveButton,
+      oldPasswordInput,
+      passwordInput,
+      passwordRepeatInput
+    } = this.props as IChangePasswordPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      aside: (<IChangePasswordPageOptions> this.props).aside.render(),
-      profileAvatar: (<IChangePasswordPageOptions> this.props).profileAvatar.render(),
-      saveButton: (<IChangePasswordPageOptions> this.props).saveButton.render(),
-      oldPasswordInput: (<IChangePasswordPageOptions> this.props).oldPasswordInput.render(),
-      passwordInput: (<IChangePasswordPageOptions> this.props).passwordInput.render(),
-      passwordRepeatInput: (<IChangePasswordPageOptions> this.props).passwordRepeatInput.render(),
+      elementId: elementId,
+      aside: aside.render(),
+      profileAvatar: profileAvatar.render(),
+      saveButton: saveButton.render(),
+      oldPasswordInput: oldPasswordInput.render(),
+      passwordInput: passwordInput.render(),
+      passwordRepeatInput: passwordRepeatInput.render(),
     });
   }
 }
 
-new ChangePassword('change-password');
+export default ChangePassword;

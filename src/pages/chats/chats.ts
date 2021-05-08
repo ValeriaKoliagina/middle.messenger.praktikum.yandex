@@ -21,13 +21,17 @@ class Chats extends Block {
 
   render(): string {
     const template = Handlebars.compile(chats);
+    const {
+      elementId,
+      chatListComponent
+    } = this.props as IChatsPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      chatListComponent: (<IChatsPageOptions> this.props).chatListComponent.render(),
+      elementId: elementId,
+      chatListComponent: chatListComponent.render(),
       titles,
     });
   }
 }
 
-new Chats('chats');
+export default Chats;

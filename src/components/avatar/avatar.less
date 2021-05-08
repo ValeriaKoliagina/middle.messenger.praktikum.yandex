@@ -1,17 +1,37 @@
 @import '../../theme.less';
 
 .avatar-size(@_size: 50px) {
-  height: @_size;
-  width: @_size;
 
+  &,
   img {
-    height: calc(@_size / 2);
-    width: calc(@_size / 2);
+    height: @_size;
+    width: @_size;
+  }
+
+  &.avatar-default {
+
+    img {
+      height: calc(@_size / 2);
+      width: calc(@_size / 2);
+    }
   }
 }
 
 .avatar {
   .flex-center-view();
+
+  .input-container {
+    display: none;
+  }
+
+  &-input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+  }
 
   &-image {
     align-items: center;
@@ -61,7 +81,9 @@
 
   &-error {
     color: @error-color;
+    display: block;
     font-size: @font-size-secondary;
     margin-top: 10px;
+    text-align: center;
   }
 }

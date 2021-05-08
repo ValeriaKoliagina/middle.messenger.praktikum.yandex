@@ -1,26 +1,32 @@
 import Handlebars from 'handlebars';
 
+import urls from '../../constants/urls';
+import errors from '../../constants/errors';
 import inputNames from '../../constants/inputNames';
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
+import { ActionTypes, GlobalStore } from '../../utils/store';
 import { IAvatarOptions, IButtonOptions, IInputOptions, IProfileEditPageOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import { getFormData, getName } from '../../utils/utils';
 import { isEmail, isNotEmpty, isPhone } from '../../utils/validations';
+import AuthApi from '../../api/authApi';
+import UserApi from '../../api/userApi';
 import Aside from '../../components/aside/aside';
 import Avatar from '../../components/avatar/avatar';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
-import profileInfo from '../profile/profileMock';
 import profileEdit from './profile_edit.html';
 import './profile_edit.less';
 
 class ProfileEdit extends Block {
   constructor(rootId: string) {
+    const profileInfo = GlobalStore.get('profileInfo');
 
     // avatar
     const profileAvatarOptions: IAvatarOptions = {
-      avatarSrc: profileInfo.src,
+      avatarSrc: (<Record<string, string>> profileInfo)?.avatar,
       avatarClass: 'avatar-big avatar-disabled',
     };
 
@@ -34,7 +40,7 @@ class ProfileEdit extends Block {
     const emailInputOptions: IInputOptions = {
       label: titles.EMAIL,
       inputPlaceholder: titles.EMAIL_PLACEHOLDER,
-      info: profileInfo.email,
+      info: (<Record<string, string>> profileInfo)?.email,
       inputType: inputNames.EMAIL,
       name: inputNames.EMAIL,
       validateFunctions: [isEmail],
@@ -47,7 +53,7 @@ class ProfileEdit extends Block {
     const loginInputOptions: IInputOptions = {
       label: titles.LOGIN,
       inputPlaceholder: titles.LOGIN_PLACEHOLDER,
-      info: profileInfo.login,
+      info: (<Record<string, string>> profileInfo)?.login,
       name: inputNames.LOGIN,
       validateFunctions: [isNotEmpty],
       events: {
@@ -59,7 +65,7 @@ class ProfileEdit extends Block {
     const nameInputOptions: IInputOptions = {
       label: titles.NAME,
       inputPlaceholder: titles.NAME_PLACEHOLDER,
-      info: profileInfo.name,
+      info: (<Record<string, string>> profileInfo)?.first_name,
       name: inputNames.NAME,
       validateFunctions: [isNotEmpty],
       events: {
@@ -71,7 +77,7 @@ class ProfileEdit extends Block {
     const surnameInputOptions: IInputOptions = {
       label: titles.SURNAME,
       inputPlaceholder: titles.SURNAME_PLACEHOLDER,
-      info: profileInfo.surname,
+      info: (<Record<string, string>> profileInfo)?.second_name,
       name: inputNames.SURNAME,
       validateFunctions: [isNotEmpty],
       events: {
@@ -83,7 +89,7 @@ class ProfileEdit extends Block {
     const chatNameInputOptions: IInputOptions = {
       label: titles.CHAT_NAME,
       inputPlaceholder: titles.CHAT_NAME_PLACEHOLDER,
-      info: profileInfo.chatName,
+      info: (<Record<string, string>> profileInfo)?.display_name,
       name: inputNames.CHAT_NAME,
       validateFunctions: [isNotEmpty],
       events: {
@@ -95,7 +101,7 @@ class ProfileEdit extends Block {
     const phoneInputOptions: IInputOptions = {
       label: titles.PHONE,
       inputPlaceholder: titles.PHONE_PLACEHOLDER,
-      info: profileInfo.phone,
+      info: (<Record<string, string>> profileInfo)?.phone,
       name: inputNames.PHONE,
       validateFunctions: [isPhone],
       events: {
@@ -132,13 +138,12 @@ class ProfileEdit extends Block {
     super(options, rootId);
   }
 
-  private _enter(event: Event): void {
+  private async _enter(event: Event): Promise<void> {
     event.preventDefault();
     const form = document.forms.namedItem('personInfo');
 
     if (form) {
       const data = getFormData(form);
-      console.log('data from form', data);
       const formInputs = [
         (<IProfileEditPageOptions> this.props).loginInput,
         (<IProfileEditPageOptions> this.props).emailInput,
@@ -149,7 +154,12 @@ class ProfileEdit extends Block {
       ];
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)) {
-        location.href = redirections.PROFILE;
+        try {
+          await new UserApi().changeProfile(data);
+          Router.go(redirections.PROFILE);
+        } catch (err) {
+          console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+        }
       }
     }
   }
@@ -161,28 +171,70 @@ class ProfileEdit extends Block {
   }
 
   _onKeyDown(event: KeyboardEvent): void {
-    if (event.code === 'Enter') {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       this._onChange(event);
       this._enter(event);
     }
   }
 
+  async componentDidMount() {
+    GlobalStore.subscribe(ActionTypes.CURRENT_USER, this.onProfileInfo.bind(this));
+    try {
+      const profileInfo = await new AuthApi().getUserInfo();
+      GlobalStore.dispatchAction(ActionTypes.CURRENT_USER, JSON.parse(<string>profileInfo));
+    } catch (err) {
+      console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+    }
+  }
+
+  private onProfileInfo(state: Record<string, Record<string, string>>) {
+    const {
+      profileAvatar,
+      emailInput,
+      loginInput,
+      nameInput,
+      surnameInput,
+      chatNameInput,
+      phoneInput
+    } = this.props as IProfileEditPageOptions;
+
+    profileAvatar.setProps(<IAvatarOptions>{ avatarSrc: `${urls.AVATAR}${state.currentUser.avatar}` });
+    emailInput.setProps(<IInputOptions>{ info: state.currentUser.email });
+    loginInput.setProps(<IInputOptions>{ info: state.currentUser.login });
+    nameInput.setProps(<IInputOptions>{ info: state.currentUser.first_name });
+    surnameInput.setProps(<IInputOptions>{ info: state.currentUser.second_name });
+    chatNameInput.setProps(<IInputOptions>{ info: state.currentUser.display_name });
+    phoneInput.setProps(<IInputOptions>{ info: state.currentUser.phone });
+  }
+
   render(): string {
     const template = Handlebars.compile(profileEdit);
+    const {
+      elementId,
+      aside,
+      profileAvatar,
+      saveButton,
+      emailInput,
+      loginInput,
+      nameInput,
+      surnameInput,
+      chatNameInput,
+      phoneInput
+    } = this.props as IProfileEditPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      aside: (<IProfileEditPageOptions> this.props).aside.render(),
-      profileAvatar: (<IProfileEditPageOptions> this.props).profileAvatar.render(),
-      saveButton: (<IProfileEditPageOptions> this.props).saveButton.render(),
-      emailInput: (<IProfileEditPageOptions> this.props).emailInput.render(),
-      loginInput: (<IProfileEditPageOptions> this.props).loginInput.render(),
-      nameInput: (<IProfileEditPageOptions> this.props).nameInput.render(),
-      surnameInput: (<IProfileEditPageOptions> this.props).surnameInput.render(),
-      chatNameInput: (<IProfileEditPageOptions> this.props).chatNameInput.render(),
-      phoneInput: (<IProfileEditPageOptions> this.props).phoneInput.render(),
+      elementId: elementId,
+      aside: aside.render(),
+      profileAvatar: profileAvatar.render(),
+      saveButton: saveButton.render(),
+      emailInput: emailInput.render(),
+      loginInput: loginInput.render(),
+      nameInput: nameInput.render(),
+      surnameInput: surnameInput.render(),
+      chatNameInput: chatNameInput.render(),
+      phoneInput: phoneInput.render(),
     });
   }
 }
 
-new ProfileEdit('profile-edit');
+export default ProfileEdit;

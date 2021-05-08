@@ -7,7 +7,8 @@ enum EVENTS {
   INIT = 'init',
   FLOW_CDM = 'component did mount',
   FLOW_CDU = 'component did update',
-  FLOW_RENDER = 'render'
+  FLOW_RENDER = 'render',
+  AFTER_RENDER = 'after render',
 }
 
 abstract class Block {
@@ -22,7 +23,7 @@ abstract class Block {
     if (!props.elementId) {
       props.elementId = elementId;
     }
-    this.props = this._makePropsProxy(props);
+    this.props = this._makePropsProxy({...props});
     this.eventBus = () => eventBus;
     this._registerEvents(eventBus);
     eventBus.emit(EVENTS.INIT);
@@ -33,6 +34,7 @@ abstract class Block {
     eventBus.on(EVENTS.FLOW_CDM, this._componentDidMount.bind(this));
     eventBus.on(EVENTS.FLOW_CDU, this._componentDidUpdate.bind(this));
     eventBus.on(EVENTS.FLOW_RENDER, this._render.bind(this));
+    eventBus.on(EVENTS.AFTER_RENDER, this._afterRender.bind(this));
   }
 
   private _createResources(): void {
@@ -127,7 +129,7 @@ abstract class Block {
   }
 
   get element(): HTMLElement {
-    return <HTMLElement> this._element.firstChild;
+    return <HTMLElement> this._element.firstElementChild;
   }
 
   private _render(): void {
@@ -141,7 +143,6 @@ abstract class Block {
       rootElement.innerHTML = '';
       rootElement.appendChild(this.element);
     }
-
     if (!this._rootId) {
       const elementSelf = document.getElementById(this.props.elementId ?? '');
 
@@ -151,9 +152,16 @@ abstract class Block {
     }
 
     this.attachListeners();
+    this.eventBus().emit(EVENTS.AFTER_RENDER);
   }
 
   abstract render(): string
+
+  afterRender(elementId?: string): void { elementId; }
+
+  private _afterRender(): void {
+    this.afterRender(this.props.elementId);
+  }
 
   private _makePropsProxy(props: IOptions): IOptions {
     const _checkPropIsInternal = (prop: string): void => {
@@ -190,6 +198,20 @@ abstract class Block {
     });
 
     return proxyProps;
+  }
+
+  show() {
+    const rootElement = document.getElementById(this._rootId ?? '');
+    if (rootElement) {
+      rootElement.style.display = 'block';
+    }
+  }
+
+  hide() {
+    const rootElement = document.getElementById(this._rootId ?? '');
+    if (rootElement) {
+      rootElement.style.display = 'none';
+    }
   }
 }
 

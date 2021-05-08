@@ -1,8 +1,17 @@
 
 <div id='{{elementId}}' class='avatar'>
-  <div class='avatar-image{{avatarClass}}'>
-    {{#img avatarSrc alt='avatar'}}{{/img}}
-  </div>
+  {{#unless isNoUpload}}
+    {{{avatarInput}}}
+  {{/unless}}
+  {{#if isEmpty}}
+    <label for='upload-photo' class='avatar-image{{avatarClass}} avatar-default'>
+      {{#img avatarSrc alt='avatar'}}{{/img}}
+    </label> 
+  {{else}}
+    <label for='upload-photo' class='avatar-image{{avatarClass}}'>
+      {{#img avatarSrc alt='avatar'}}{{/img}}
+    </label>
+  {{/if}}
 
   {{#if avatarError}}
     <span class='avatar-error'>{{avatarError}}</span>

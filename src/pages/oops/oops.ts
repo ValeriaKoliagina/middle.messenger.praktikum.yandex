@@ -4,12 +4,13 @@ import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
 import '../../utils/handlebarsHelpers';
 import { IButtonOptions, IErrorPageOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import oops from './oops.html';
 import './oops.less';
 
-class Oops extends Block {
+export class Oops extends Block {
   constructor(rootId: string) {
 
     const returnToChatsButtonOptions: IButtonOptions = {
@@ -29,18 +30,22 @@ class Oops extends Block {
   }
 
   private _redirect(): void {
-    location.href = redirections.LOGOUT;
+    Router.go(redirections.LOGOUT);
   }
 
   render(): string {
     const template = Handlebars.compile(oops);
+    const {
+      elementId,
+      returnToChatsButton
+    } = this.props as IErrorPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      returnToChatsButton: (<IErrorPageOptions> this.props).returnToChatsButton.render(),
+      elementId: elementId,
+      returnToChatsButton: returnToChatsButton.render(),
       titles,
     });
   }
 }
 
-new Oops('oops');
+export default Oops;

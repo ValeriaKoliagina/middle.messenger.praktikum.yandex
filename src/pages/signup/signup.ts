@@ -1,11 +1,14 @@
 import Handlebars from 'handlebars';
 
+import errors from '../../constants/errors';
 import inputNames from '../../constants/inputNames';
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
 import { IButtonOptions, IInputOptions, ISignupPageOptions } from '../../utils/interfaces';
+import Router from '../../utils/router';
 import { getFormData, getName } from '../../utils/utils';
-import { isEmail, isNotEmpty, isPassword, isPasswordSame } from '../../utils/validations';
+import { isEmail, isNotEmpty, isPassword, isPasswordSame, isPhone } from '../../utils/validations';
+import AuthApi from '../../api/authApi';
 import Block from '../../components/block/block';
 import Button from '../../components/button/button';
 import Input from '../../components/input/input';
@@ -73,6 +76,17 @@ class Signup extends Block {
       }
     };
 
+    const phoneInputOptions: IInputOptions = {
+      label: titles.PHONE,
+      inputPlaceholder: titles.PHONE_PLACEHOLDER,
+      name: inputNames.PHONE,
+      validateFunctions: [isPhone],
+      events: {
+        change: (event: Event) => this._onChange(event),
+        keydown: (event: KeyboardEvent) => this._onKeyDown(event),
+      }
+    };
+
     const passwordInputOptions: IInputOptions = {
       label: titles.PASSWORD,
       inputPlaceholder: titles.PASSWORD_PLACEHOLDER,
@@ -104,6 +118,7 @@ class Signup extends Block {
     const loginInput = new Input(loginInputOptions);
     const nameInput = new Input(nameInputOptions);
     const surnameInput = new Input(surnameInputOptions);
+    const phoneInput = new Input(phoneInputOptions);
     const passwordInput = new Input(passwordInputOptions);
     const passwordRepeatInput = new Input(passwordRepeatInputOptions);
 
@@ -115,6 +130,7 @@ class Signup extends Block {
       loginInput,
       nameInput,
       surnameInput,
+      phoneInput,
       passwordInput,
       passwordRepeatInput,
       submitFormHandler: (event: Event) => this._enter(event),
@@ -123,31 +139,37 @@ class Signup extends Block {
     super(options, rootId);
   }
 
-  private _enter(event: Event): void {
+  private async _enter(event: Event): Promise<void> {
     event.preventDefault();
     const form = document.forms.namedItem('signup');
 
     if (form) {
       const data = getFormData(form);
-      console.log('data from form', data, event);
       const formInputs = [
         (<ISignupPageOptions> this.props).loginInput,
         (<ISignupPageOptions> this.props).emailInput,
         (<ISignupPageOptions> this.props).nameInput,
         (<ISignupPageOptions> this.props).surnameInput,
+        (<ISignupPageOptions> this.props).phoneInput,
         (<ISignupPageOptions> this.props).passwordInput,
         (<ISignupPageOptions> this.props).passwordRepeatInput
       ];
 
       if (formInputs.reduce((acc, input) => input.validate() && acc, true)
       ) {
-        location.href = redirections.CHATS;
+        try {
+          delete data.passwordRepeatInput;
+          await new AuthApi().signup(data);
+          Router.go(redirections.CHATS);
+        } catch (err) {
+          console.error(`${errors.RESPONSE_FAILED}: ${err?.reason || err}`);
+        }
       }
     }
   }
 
   private _redirect(): void {
-    location.href = redirections.LOGOUT;
+    Router.go(redirections.LOGOUT);
   }
 
   _onChange(event: Event): void {
@@ -157,7 +179,7 @@ class Signup extends Block {
   }
 
   _onKeyDown(event: KeyboardEvent): void {
-    if (event.code === 'Enter') {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       this._onChange(event);
       this._enter(event);
     }
@@ -165,20 +187,33 @@ class Signup extends Block {
 
   render(): string {
     const template = Handlebars.compile(signup);
+    const {
+      elementId,
+      signupButton,
+      rememberAllButton,
+      emailInput,
+      loginInput,
+      nameInput,
+      surnameInput,
+      phoneInput,
+      passwordInput,
+      passwordRepeatInput
+    } = this.props as ISignupPageOptions;
 
     return template({
-      elementId: this.props.elementId,
-      signupButton: (<ISignupPageOptions> this.props).signupButton.render(),
-      rememberAllButton: (<ISignupPageOptions> this.props).rememberAllButton.render(),
-      emailInput: (<ISignupPageOptions> this.props).emailInput.render(),
-      loginInput: (<ISignupPageOptions> this.props).loginInput.render(),
-      nameInput: (<ISignupPageOptions> this.props).nameInput.render(),
-      surnameInput: (<ISignupPageOptions> this.props).surnameInput.render(),
-      passwordInput: (<ISignupPageOptions> this.props).passwordInput.render(),
-      passwordRepeatInput: (<ISignupPageOptions> this.props).passwordRepeatInput.render(),
+      elementId: elementId,
+      signupButton: signupButton.render(),
+      rememberAllButton: rememberAllButton.render(),
+      emailInput: emailInput.render(),
+      loginInput: loginInput.render(),
+      nameInput: nameInput.render(),
+      surnameInput: surnameInput.render(),
+      phoneInput: phoneInput.render(),
+      passwordInput: passwordInput.render(),
+      passwordRepeatInput: passwordRepeatInput.render(),
       titles,
     });
   }
 }
 
-new Signup('signup');
+export default Signup;
