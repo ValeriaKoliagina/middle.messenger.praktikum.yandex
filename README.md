@@ -1,9 +1,8 @@
 # Sprint-3
 
-1. Домен из Netlify, где можно потыкать (sprint-3 branch): https://happy-hamilton-deb78f.netlify.app/,
-   домен для деплоя: https://nostalgic-raman-071242.netlify.app
+1. Heroku: https://sad-lemur.herokuapp.com/
 2. Макет в Figma: https://www.figma.com/file/pFjKdu2Zj6qZp6yd9gIcPR/Messenger
-3. PR: https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex/pull/2
+3. PR: https://github.com/ValeriaKoliagina/middle.messenger.praktikum.yandex/pull/3
 
 # Описание
 Мессенджер "Грустный лемур" - почувствуй свое одиночесво на нерабочем функционале. 

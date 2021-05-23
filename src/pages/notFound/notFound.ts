@@ -1,8 +1,6 @@
-import Handlebars from 'handlebars';
-
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
-import '../../utils/handlebarsHelpers';
+import '../../utils/handlebarsHelpers/img.js';
 import { IButtonOptions, IErrorPageOptions } from '../../utils/interfaces';
 import Router from '../../utils/router';
 import Block from '../../components/block/block';
@@ -33,13 +31,12 @@ export class NotFound extends Block {
   }
 
   render(): string {
-    const template = Handlebars.compile(notFound);
     const {
       elementId,
       returnToChatsButton
     } = this.props as IErrorPageOptions;
 
-    return template({
+    return notFound({
       elementId: elementId,
       returnToChatsButton: returnToChatsButton.render(),
       titles,
