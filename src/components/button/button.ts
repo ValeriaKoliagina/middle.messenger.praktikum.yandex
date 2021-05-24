@@ -1,4 +1,3 @@
-import '../../utils/handlebarsHelpers/img.js';
 import { IButtonOptions } from '../../utils/interfaces';
 import Block from '../block/block';
 import button from './button.html';

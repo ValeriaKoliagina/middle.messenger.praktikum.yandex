@@ -1,10 +1,18 @@
-module.exports = function(src) {
+interface IDateStringOptions {
+  minute?: 'numeric' | '2-digit';
+  hour?: 'numeric' | '2-digit';
+  year?: 'numeric' | '2-digit';
+  month?: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
+  day?: 'numeric' | '2-digit';
+}
+
+module.exports = function(src: string) {
   if (!src) { 
     return ''; 
   }
   
   const date = new Date(src);
-  const options = {
+  const options: IDateStringOptions = {
     hour: '2-digit',
     minute: '2-digit'
   };

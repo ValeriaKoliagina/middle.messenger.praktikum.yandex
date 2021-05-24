@@ -1,5 +1,4 @@
 import urls from '../../constants/urls';
-import '../../utils/handlebarsHelpers/img.js';
 import { IAvatarOptions, IInputOptions } from '../../utils/interfaces';
 import Block from '../block/block';
 import Input from '../input/input';

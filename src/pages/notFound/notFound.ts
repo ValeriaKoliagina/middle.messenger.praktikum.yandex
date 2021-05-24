@@ -1,6 +1,5 @@
 import redirections from '../../constants/redirections';
 import titles from '../../constants/titles';
-import '../../utils/handlebarsHelpers/img.js';
 import { IButtonOptions, IErrorPageOptions } from '../../utils/interfaces';
 import Router from '../../utils/router';
 import Block from '../../components/block/block';

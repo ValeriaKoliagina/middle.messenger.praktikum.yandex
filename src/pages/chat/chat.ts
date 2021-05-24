@@ -3,8 +3,6 @@ import errors from '../../constants/errors';
 import titles from '../../constants/titles';
 import urls from '../../constants/urls';
 import { getChats } from '../../services/chatServices';
-import '../../utils/handlebarsHelpers/img.js';
-import '../../utils/handlebarsHelpers/date.js';
 import { ActionTypes, GlobalStore } from '../../utils/store';
 import { IAvatarOptions, IButtonOptions, IChatListItemOptions, IChatPageOptions, IInputOptions, IModalOptions } from '../../utils/interfaces';
 import { isNotEmpty } from '../../utils/validations';
@@ -225,6 +223,10 @@ class Chat extends Block {
   }
 
   private sendChatMessage(message: string) {
+    if (message === '') {
+      return
+    }
+
     (new ChatWebSocket()).send({
       content: message,
       type: 'message',
