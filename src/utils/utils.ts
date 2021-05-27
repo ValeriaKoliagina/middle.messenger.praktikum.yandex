@@ -25,4 +25,15 @@ const getName = (event: Event): string => {
   return name;
 };
 
-export { generateRandomString, getFormData, getName };
+const showAlert = (className: string, message: string) => {
+  const alert = document.querySelector('#alert');
+  alert!.classList.add('alert-open', className);
+  alert!.textContent = message;
+
+  setTimeout(() => {
+    alert!.classList.remove('alert-open', className);
+    alert!.textContent = '';
+  }, 3000);
+};
+
+export { generateRandomString, getFormData, getName, showAlert };

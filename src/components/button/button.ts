@@ -1,6 +1,3 @@
-import Handlebars from 'handlebars';
-
-import '../../utils/handlebarsHelpers';
 import { IButtonOptions } from '../../utils/interfaces';
 import Block from '../block/block';
 import button from './button.html';
@@ -15,9 +12,7 @@ class Button extends Block {
   }
 
   render(): string {
-    const template = Handlebars.compile(button);
-
-    return template(this.props);
+    return button({...this.props});
   }
 }
 
